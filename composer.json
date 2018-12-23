@@ -1,0 +1,15 @@
+{
+  "name": "kepawni/serge",
+  "type": "library",
+  "license": "GNU GPLv3",
+  "autoload": {
+    "psr-4": {
+      "Kepawni\\Serge\\": "src/"
+    }
+  },
+  "require-dev": {
+    "phpspec/phpspec": "^5.1"
+  },
+  "require": {
+  }
+}
