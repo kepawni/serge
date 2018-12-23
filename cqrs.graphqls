@@ -30,7 +30,7 @@ type QInvoice {
 	lineItems: [QLineItem!]!
 }
 type QAddress {
-	countryCode: QCountry!
+	countryCode: String!
 	postalCode: String!
 	city: String!
 	addressLines: [String!]!
