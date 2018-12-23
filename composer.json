@@ -11,5 +11,6 @@
     "phpspec/phpspec": "^5.1"
   },
   "require": {
+    "webonyx/graphql-php": "^0.13.0"
   }
 }
