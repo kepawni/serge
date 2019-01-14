@@ -1,2 +1,4 @@
 formatter.name: pretty
 composer_suite_detection: true
+extensions:
+  LeanPHP\PhpSpec\CodeCoverage\CodeCoverageExtension: ~

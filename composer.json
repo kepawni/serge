@@ -8,13 +8,19 @@
     }
   },
   "require-dev": {
+    "leanphp/phpspec-code-coverage": "^5.0",
     "phpspec/phpspec": "^5.1"
   },
   "require": {
+    "ext-json": "*",
     "webonyx/graphql-php": "^0.13.0",
     "kepawni/twilted": "^1.1"
   },
   "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/lingoda/phpspec-code-coverage.git"
+    },
     {
       "type": "vcs",
       "url": "https://github.com/kepawni/twilted.git"
