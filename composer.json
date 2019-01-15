@@ -8,6 +8,7 @@
     }
   },
   "require-dev": {
+    "deswerve/colin": "dev-master",
     "leanphp/phpspec-code-coverage": "^5.0",
     "phpspec/phpspec": "^5.1"
   },
@@ -18,12 +19,25 @@
   },
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/lingoda/phpspec-code-coverage.git"
+      "type": "package",
+      "package": {
+        "name": "deswerve/colin",
+        "version": "master",
+        "source": {
+          "url": "https://github.com/deswerve/colin.git",
+          "type": "git",
+          "reference": "1c783e"
+        },
+        "autoload": {
+          "psr-4": {
+            "deswerve\\colin\\": "./"
+          }
+        }
+      }
     },
     {
       "type": "vcs",
-      "url": "https://github.com/kepawni/twilted.git"
+      "url": "https://github.com/lingoda/phpspec-code-coverage.git"
     }
   ]
 }
