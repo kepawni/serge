@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "396c07310bafd578053c7e2108a5316b",
+    "content-hash": "2d38999753c9aff38b41ea6a804c312f",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -62,17 +62,33 @@
             "time": "2018-12-24T15:25:25+00:00"
         },
         {
+            "name": "deswerve/colin",
+            "version": "master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/deswerve/colin.git",
+                "reference": "1c783e"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "deswerve\\colin\\": "./"
+                }
+            },
+            "time": "2019-01-14T23:57:58+00:00"
+        },
+        {
             "name": "kepawni/twilted",
-            "version": "v1.1.2",
+            "version": "v1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kepawni/twilted.git",
-                "reference": "d1409ffa630b334babb384bb3e9c4ec95cec635f"
+                "reference": "1921856727b8cc418cb1feaa842019e3adcbfdd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kepawni/twilted/zipball/d1409ffa630b334babb384bb3e9c4ec95cec635f",
-                "reference": "d1409ffa630b334babb384bb3e9c4ec95cec635f",
+                "url": "https://api.github.com/repos/kepawni/twilted/zipball/1921856727b8cc418cb1feaa842019e3adcbfdd1",
+                "reference": "1921856727b8cc418cb1feaa842019e3adcbfdd1",
                 "shasum": ""
             },
             "require": {
@@ -81,6 +97,8 @@
                 "ramsey/uuid": "^3.8"
             },
             "require-dev": {
+                "ext-xdebug": "*",
+                "leanphp/phpspec-code-coverage": "^5.0",
                 "phpspec/phpspec": "^5.1"
             },
             "type": "library",
@@ -89,14 +107,17 @@
                     "Kepawni\\Twilted\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "GNU GPLv3"
+                "GPL-3.0-only"
             ],
-            "support": {
-                "source": "https://github.com/kepawni/twilted/tree/v1.1.2",
-                "issues": "https://github.com/kepawni/twilted/issues"
-            },
-            "time": "2018-12-21T09:55:58+00:00"
+            "description": "A strictly typed PHP 7 CQRS/ES library/framework suited for PhpSpec and striving for highest IDE intellisense comfort",
+            "keywords": [
+                "cqrs",
+                "event sourcing",
+                "phpspec"
+            ],
+            "time": "2019-01-15T08:17:00+00:00"
         },
         {
             "name": "mathiasverraes/classfunctions",
@@ -387,22 +408,6 @@
         }
     ],
     "packages-dev": [
-        {
-            "name": "deswerve/colin",
-            "version": "master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/deswerve/colin.git",
-                "reference": "1c783e"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "deswerve\\colin\\": "./"
-                }
-            },
-            "time": "2019-01-14T23:57:58+00:00"
-        },
         {
             "name": "doctrine/instantiator",
             "version": "1.1.0",

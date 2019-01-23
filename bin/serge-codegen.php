@@ -5,6 +5,7 @@ use Kepawni\Serge\CodeGenerator\ValueObjectGenerator;
 use PhpSpec\Factory\ReflectionFactory;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+$cli = '';
 try {
     $cli = createCommandLineInterpreter();
     $commandLine = $cli->processCommandLine($argv);
@@ -42,7 +43,7 @@ function createCodeGeneratorForType($commandLine)
 
 function createCommandLineInterpreter(): CommandLineInterface
 {
-    return (new CommandLineInterface('codegen', ['{--help | -h}', 'OPTIONS DESCRIPTOR_FILES...',]))
+    return (new CommandLineInterface('serge-codegen', ['{--help | -h}', 'OPTIONS DESCRIPTOR_FILES...',]))
         ->addOption('type', 'One of EventPayload, ValueObject', ['TYPE'], 't')
         ->addOption(
             'root-ns',

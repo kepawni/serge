@@ -7,13 +7,14 @@
       "Kepawni\\Serge\\": "src/"
     }
   },
+  "bin": ["bin/serge-codegen.php"],
   "require-dev": {
-    "deswerve/colin": "dev-master",
     "leanphp/phpspec-code-coverage": "^5.0",
     "phpspec/phpspec": "^5.1"
   },
   "require": {
     "ext-json": "*",
+    "deswerve/colin": "dev-master",
     "webonyx/graphql-php": "^0.13.0",
     "kepawni/twilted": "^1.1"
   },
