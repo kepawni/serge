@@ -8,20 +8,17 @@ require_once __DIR__ . '/../vendor/autoload.php';
 try {
     $cli = createCommandLineInterpreter();
     $commandLine = $cli->processCommandLine($argv);
-    $files = $commandLine->params;
-    $namespaceInterfaces = scanFilesForInterfaceNames($files);
-    $reflector = new ReflectionFactory();
-    foreach ($namespaceInterfaces as $namespaceClass) {
-        createCodeGeneratorForType($commandLine)->processNamespaceDescriptorClass(
-            $reflector->create($namespaceClass),
-            $commandLine->options['dir']->values[0],
-            convertNamespaceSeparators($commandLine->options['root-ns']->values[0]),
-            convertNamespaceSeparators($commandLine->options['param-ns']->values[0])
+    if ($commandLine->options['help']->count >= 1) {
+        echo $cli;
+    } else {
+        processNamespaceDescriptors(
+            scanFilesForInterfaceNames($commandLine->params),
+            $commandLine,
+            new ReflectionFactory()
         );
     }
 } catch (Throwable $e) {
-    echo $cli, PHP_EOL;
-    throw $e;
+    printf('%s: %s%4$s%4$s%s', get_class($e), $e->getMessage(), $cli, PHP_EOL);
 }
 //
 function convertNamespaceSeparators(?string $namespace): ?string
@@ -45,14 +42,7 @@ function createCodeGeneratorForType($commandLine)
 
 function createCommandLineInterpreter(): CommandLineInterface
 {
-    $cli = new CommandLineInterface(
-        'codegen',
-        [
-            '--help',
-            'OPTIONS DESCRIPTOR_FILES...',
-        ]
-    );
-    $cli
+    return (new CommandLineInterface('codegen', ['{--help | -h}', 'OPTIONS DESCRIPTOR_FILES...',]))
         ->addOption('type', 'One of EventPayload, ValueObject', ['TYPE'], 't')
         ->addOption(
             'root-ns',
@@ -78,8 +68,28 @@ function createCommandLineInterpreter(): CommandLineInterface
             true,
             [__DIR__ . '/../src/Model']
         )
-    ;
-    return $cli;
+        ->addOption('help', 'Show this usage info and ignore any other options', null, 'h')
+        ;
+}
+
+function guardNonEmpty(array $namespaceInterfaces): array
+{
+    if (!$namespaceInterfaces) {
+        throw new Exception('Could not find any namespace descriptor interfaces in the specified file paths.');
+    }
+    return $namespaceInterfaces;
+}
+
+function processNamespaceDescriptors($namespaceInterfaces, $commandLine, $reflector): void
+{
+    foreach (guardNonEmpty($namespaceInterfaces) as $namespaceClass) {
+        createCodeGeneratorForType($commandLine)->processNamespaceDescriptorClass(
+            $reflector->create($namespaceClass),
+            $commandLine->options['dir']->values[0],
+            convertNamespaceSeparators($commandLine->options['root-ns']->values[0]),
+            convertNamespaceSeparators($commandLine->options['param-ns']->values[0])
+        );
+    }
 }
 
 function scanFilesForInterfaceNames(array $files): array
