@@ -1,0 +1,90 @@
+schema {
+	query: CqrsQuery
+	mutation: CqrsCommandHandlers
+}
+type CqrsQuery {
+	# add queries against your read model here
+	customers(nameStartsWith: String): [QCustomer!]!
+	invoices: [QInvoice!]!
+}
+type CqrsCommandHandlers {
+	# these are the command handlers for mutations to your domain model
+	Customer(id: String!): CustomerHandler!
+	Invoice(id: String!): InvoiceHandler!
+}
+
+#region query types
+# the Q prefix is used to distinguish them from homonymous input types (for mutations, see below).
+type QCustomer {
+	billingAddress: QAddress!
+	id: String!
+	invoices: [QInvoice!]!
+	name: String!
+	shippingAddress: QAddress!
+}
+type QInvoice {
+	id: String!
+	date: String!
+	dueDate: String!
+	number: String!
+	lineItems: [QLineItem!]!
+}
+type QAddress {
+	countryCode: String!
+	postalCode: String!
+	city: String!
+	addressLines: [String!]!
+}
+type QLineItem {
+	price: QMoney
+	quantity: Int
+	title: String!
+}
+type QMoney {
+	amount: Float!
+	currency: String!
+}
+#endregion
+
+#region command handlers and their commands
+# command mutations must return non-null, so we use a boolean indicating success
+# the @create annotation marks static factory methods within the domain model, but this has no effect other than making
+# that fact obvious in this file
+type CustomerHandler {
+	engageInBusiness(name: String! billingAddress: MAddress!): Boolean! @create
+	relocate(billingAddress: MAddress!): Boolean!
+	rename(name: String!): Boolean!
+}
+type InvoiceHandler {
+	chargeCustomer(customerId: String!, invoiceNumber: String!, invoiceDate: String!): Boolean! @create
+	appendLineItem(item: MLineItem!): Boolean!
+	correctMistypedInvoiceDate(invoiceDate: MDate!): Boolean!
+	overrideDueDate(dueDate: MDate!): Boolean!
+	removeLineItemByPosition(position: Int!): Boolean!
+	requestPaymentReference(paymentReference: String!): Boolean!
+}
+#endregion
+
+#region mutation types
+# the Q prefix is used to distinguish them from homonymous input types (for mutations, see below).
+input MAddress{
+	addressLine1: String
+	addressLine2: String
+	addressLine3: String
+	city: String!
+	countryCode: String!
+	postalCode: String!
+}
+input MDate {
+	iso8601value: String!
+}
+input MLineItem {
+	price: MMoney!
+	quantity: Float!
+	title: String!
+}
+input MMoney {
+	amount: Float!
+	currency: String!
+}
+#endregion

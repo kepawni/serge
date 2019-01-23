@@ -1,0 +1,11 @@
+{
+  "schema": {
+    "file": "cqrs.graphqls"
+  },
+  "endpoints": [
+    {
+      "name": "localhost:4775",
+      "url": "http://localhost:4775/"
+    }
+  ]
+}
