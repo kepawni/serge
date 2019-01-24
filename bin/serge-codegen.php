@@ -4,8 +4,7 @@ use Kepawni\Serge\CodeGenerator\EventPayloadGenerator;
 use Kepawni\Serge\CodeGenerator\ValueObjectGenerator;
 use PhpSpec\Factory\ReflectionFactory;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-$cli = '';
+require_once locateAutoloader($argv ?? []);
 try {
     $cli = createCommandLineInterpreter();
     $commandLine = $cli->processCommandLine($argv);
@@ -19,7 +18,7 @@ try {
         );
     }
 } catch (Throwable $e) {
-    printf('%s: %s%4$s%4$s%s', get_class($e), $e->getMessage(), $cli, PHP_EOL);
+    printf('%s: %s%4$s%4$s%s', get_class($e), $e->getMessage(), $cli ?? '', PHP_EOL);
 }
 //
 function convertNamespaceSeparators(?string $namespace): ?string
@@ -79,6 +78,29 @@ function guardNonEmpty(array $namespaceInterfaces): array
         throw new Exception('Could not find any namespace descriptor interfaces in the specified file paths.');
     }
     return $namespaceInterfaces;
+}
+
+function locateAutoloader(array $argv): string
+{
+    if (PHP_SAPI !== 'cli') {
+        throw new RuntimeException('This is a command line executable');
+    }
+    if (!isset($argv[0])) {
+        throw new RuntimeException('Could not locate executable script');
+    }
+    $realpath = realpath(dirname($argv[0]));
+    $lastTwo = implode('/', array_slice(explode(DIRECTORY_SEPARATOR, $realpath), -2));
+    if ($lastTwo === 'vendor/bin') {
+        return $realpath . '/../autoload.php';
+    }
+    $path = explode(DIRECTORY_SEPARATOR, realpath(__DIR__));
+    foreach (array_keys($path) as $i) {
+        $filename = implode('/', array_slice($path, 0, -$i)) . '/vendor/autoload.php';
+        if (is_file($filename)) {
+            return $filename;
+        }
+    }
+    return __DIR__ . '/../vendor/autoload.php';
 }
 
 function processNamespaceDescriptors($namespaceInterfaces, $commandLine, $reflector): void
