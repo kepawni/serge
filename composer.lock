@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2d38999753c9aff38b41ea6a804c312f",
+    "content-hash": "44416ebe7ded9308bcfeaf8b0a2a3963",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -67,7 +67,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/deswerve/colin.git",
-                "reference": "1c783e"
+                "reference": "e580750"
             },
             "type": "library",
             "autoload": {
@@ -75,7 +75,7 @@
                     "deswerve\\colin\\": "./"
                 }
             },
-            "time": "2019-01-14T23:57:58+00:00"
+            "time": "2019-01-24T09:15:56+00:00"
         },
         {
             "name": "kepawni/twilted",

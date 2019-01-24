@@ -14,7 +14,7 @@
   },
   "require": {
     "ext-json": "*",
-    "deswerve/colin": "dev-master",
+    "deswerve/colin": "dev-master#e580750",
     "webonyx/graphql-php": "^0.13.0",
     "kepawni/twilted": "^1.1"
   },
@@ -27,7 +27,7 @@
         "source": {
           "url": "https://github.com/deswerve/colin.git",
           "type": "git",
-          "reference": "1c783e"
+          "reference": "master"
         },
         "autoload": {
           "psr-4": {
