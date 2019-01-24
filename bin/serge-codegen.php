@@ -68,7 +68,7 @@ function createCommandLineInterpreter(): CommandLineInterface
             true,
             [__DIR__ . '/../src/Model']
         )
-        ->addOption('help', 'Show this usage info and ignore any other options', null, 'h')
+        ->addOption('help', 'Show this usage info and ignore any other options', null, 'h', true)
         ;
 }
 
