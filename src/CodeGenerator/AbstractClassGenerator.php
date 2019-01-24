@@ -132,7 +132,10 @@ abstract class AbstractClassGenerator
     protected function addScalarParam(ReflectionParameter $propertyDescriptor, ?string $typeFunction): void
     {
         $this->unwindItems[] = sprintf(
-            '            %s($spool[%d])',
+            '            %s%s($spool[%d])',
+            $propertyDescriptor->allowsNull()
+                ? sprintf('is_null($spool[%d]) ? null : ', count($this->unwindItems))
+                : '',
             $typeFunction ?: 'unserialize',
             count($this->unwindItems)
         );
