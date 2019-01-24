@@ -4,6 +4,7 @@
   "license": "GNU GPLv3",
   "autoload": {
     "psr-4": {
+      "deswerve\\colin\\": "src-colin/",
       "Kepawni\\Serge\\": "src/"
     }
   },
@@ -14,28 +15,10 @@
   },
   "require": {
     "ext-json": "*",
-    "deswerve/colin": "dev-master#e580750",
     "webonyx/graphql-php": "^0.13.0",
     "kepawni/twilted": "^1.1"
   },
   "repositories": [
-    {
-      "type": "package",
-      "package": {
-        "name": "deswerve/colin",
-        "version": "master",
-        "source": {
-          "url": "https://github.com/deswerve/colin.git",
-          "type": "git",
-          "reference": "master"
-        },
-        "autoload": {
-          "psr-4": {
-            "deswerve\\colin\\": "./"
-          }
-        }
-      }
-    },
     {
       "type": "vcs",
       "url": "https://github.com/lingoda/phpspec-code-coverage.git"
