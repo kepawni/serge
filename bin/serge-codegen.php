@@ -48,9 +48,7 @@ function createCommandLineInterpreter(): CommandLineInterface
             'root-ns',
             'The root namespace for the generated classes (which may declare sub-namespaces)',
             ['NAMESPACE'],
-            'r',
-            true,
-            ['\\Kepawni\\Serge\\Model']
+            'r'
         )
         ->addOption(
             'param-ns',
@@ -60,14 +58,7 @@ function createCommandLineInterpreter(): CommandLineInterface
             true,
             [null]
         )
-        ->addOption(
-            'dir',
-            'The target directory corresponding to the root namespace',
-            ['PATH'],
-            'd',
-            true,
-            [__DIR__ . '/../src/Model']
-        )
+        ->addOption('dir', 'The target directory corresponding to the root namespace', ['PATH'], 'd')
         ->addOption('help', 'Show this usage info and ignore any other options', null, 'h', true)
         ;
 }
