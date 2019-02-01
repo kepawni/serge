@@ -1,4 +1,13 @@
 formatter.name: pretty
-composer_suite_detection: true
+suites:
+  serge:
+    namespace: Kepawni\Serge
+    psr4_prefix: Kepawni\Serge
+    spec_prefix: spec\serge
+  colin:
+    src_path: src-colin
+    namespace: deswerve\colin
+    psr4_prefix: deswerve\colin
+    spec_prefix: spec\colin
 extensions:
   LeanPHP\PhpSpec\CodeCoverage\CodeCoverageExtension: ~
