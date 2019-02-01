@@ -15,12 +15,12 @@ class ParameterSpec extends ObjectBehavior
 
     function it_exposes_the_name()
     {
-        $this->name->shouldBe('name');
+        $this->getName()->shouldBe('name');
     }
 
     function it_exposes_the_type()
     {
-        $this->type->shouldBeAnInstanceOf(Type::class);
+        $this->getType()->shouldBeAnInstanceOf(Type::class);
     }
 
     function it_is_initializable()

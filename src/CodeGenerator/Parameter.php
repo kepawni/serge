@@ -1,24 +1,35 @@
 <?php declare(strict_types=1);
 namespace Kepawni\Serge\CodeGenerator;
 
-use Kepawni\Twilted\Basic\ImmutableValue;
-
-/**
- * @property-read string $name
- * @property-read Type $type
- * @method self withName(string $v)
- * @method self withType(Type $v)
- */
-class Parameter extends ImmutableValue
+class Parameter
 {
+    private $name;
+    private $type;
+
     public function __construct(string $name, Type $type)
     {
-        $this->init('name', $name);
-        $this->init('type', $type);
+        $this->name = $name;
+        $this->type = $type;
     }
 
     public function __toString()
     {
-        return $this->type->toParam() . '$' . $this->name;
+        return $this->getType()->toParam() . '$' . $this->getName();
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return Type
+     */
+    public function getType(): Type
+    {
+        return $this->type;
     }
 }
