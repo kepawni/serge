@@ -10,4 +10,10 @@ suites:
     psr4_prefix: deswerve\colin
     spec_prefix: spec\colin
 extensions:
-  LeanPHP\PhpSpec\CodeCoverage\CodeCoverageExtension: ~
+  LeanPHP\PhpSpec\CodeCoverage\CodeCoverageExtension:
+    format: clover
+    output:
+      clover: data/coverage.xml
+    whitelist:
+      - src
+      - src-colin
