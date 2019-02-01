@@ -36,14 +36,13 @@ class Type extends ImmutableValue
         ?string $shortName = null,
         ?string $namespace = null,
         bool $isNullable = true,
-        bool $isCollection = false,
-        bool $isScalar = false
+        bool $isCollection = false
     ) {
         $this->init('shortName', $shortName === 'mixed' ? null : $shortName);
         $this->init('namespace', $namespace);
         $this->init('isNullable', $isNullable && $shortName !== self::VOID);
         $this->init('isCollection', $isCollection && $shortName !== self::VOID);
-        $this->init('isScalar', $isScalar);
+        $this->init('isScalar', in_array($shortName, [self::BOOL, self::FLOAT, self::INT, self::STRING]));
     }
 
     public static function fromGraphQlType(GraphQlType $type, string $idClass, string $defaultNamespace)
