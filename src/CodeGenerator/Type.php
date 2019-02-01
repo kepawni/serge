@@ -92,6 +92,18 @@ class Type extends ImmutableValue
         );
     }
 
+    public function toConversion(string $valueExpression, string $classConversionSprintfTemplate = 'new %s'): string
+    {
+        return sprintf(
+            $this->shortName && !$this->isCollection ? '%s%s(%s)' : '%s%3$s',
+            $this->isNullable ? sprintf('is_null(%s) ? null : ', $valueExpression) : '',
+            $this->isScalar
+                ? str_replace('string', 'str', $this->shortName) . 'val'
+                : sprintf($classConversionSprintfTemplate, $this->shortName),
+            $valueExpression
+        );
+    }
+
     public function toDocParam()
     {
         return ($this->shortName ?: 'mixed')
