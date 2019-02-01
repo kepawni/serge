@@ -6,22 +6,9 @@ use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type as GraphQlType;
-use Kepawni\Twilted\Basic\ImmutableValue;
 use UnexpectedValueException;
 
-/**
- * @property-read string|null $shortName
- * @property-read string|null $namespace
- * @property-read bool|null $isNullable
- * @property-read bool|null $isCollection
- * @property-read bool|null $isScalar
- * @method self withShortName(?string $v)
- * @method self withNamespace(?string $v)
- * @method self withIsNullable(?bool $v)
- * @method self withIsCollection(?bool $v)
- * @method self withIsScalar(?bool $v)
- */
-class Type extends ImmutableValue
+class Type
 {
     public const BOOL = 'bool';
     public const FLOAT = 'float';
@@ -31,6 +18,11 @@ class Type extends ImmutableValue
     public const STATIC = 'static';
     public const STRING = 'string';
     public const VOID = 'void';
+    private $isCollection;
+    private $isNullable;
+    private $isScalar;
+    private $namespace;
+    private $shortName;
 
     public function __construct(
         ?string $shortName = null,
@@ -38,11 +30,11 @@ class Type extends ImmutableValue
         bool $isNullable = true,
         bool $isCollection = false
     ) {
-        $this->init('shortName', $shortName === 'mixed' ? null : $shortName);
-        $this->init('namespace', $namespace);
-        $this->init('isNullable', $isNullable && $shortName !== self::VOID);
-        $this->init('isCollection', $isCollection && $shortName !== self::VOID);
-        $this->init('isScalar', in_array($shortName, [self::BOOL, self::FLOAT, self::INT, self::STRING]));
+        $this->shortName = $shortName === 'mixed' ? null : $shortName;
+        $this->namespace = $namespace;
+        $this->isNullable = $isNullable && $shortName !== self::VOID;
+        $this->isCollection = $isCollection && $shortName !== self::VOID;
+        $this->isScalar = in_array($shortName, [self::BOOL, self::FLOAT, self::INT, self::STRING]);
     }
 
     public static function fromGraphQlType(GraphQlType $type, string $idClass, string $defaultNamespace)
@@ -67,28 +59,77 @@ class Type extends ImmutableValue
     private static function traverseGraphQlType(GraphQlType $type, self $result, string $defaultNamespace): self
     {
         if ($type instanceof NonNull) {
-            return $result->withIsNullable(false);
+            $result->isNullable = false;
         } elseif ($type instanceof ListOfType) {
-            return $result->withIsCollection(true);
+            $result->isCollection = true;
         } elseif ($type instanceof ScalarType) {
-            switch ($type->name) {
-                case GraphQlType::BOOLEAN:
-                    return $result->withIsScalar(true)->withShortName(self::BOOL)->withNamespace(null);
-                case GraphQlType::FLOAT:
-                    return $result->withIsScalar(true)->withShortName(self::FLOAT)->withNamespace(null);
-                case GraphQlType::ID:
-                    return $result;
-                case GraphQlType::INT:
-                    return $result->withIsScalar(true)->withShortName(self::INT)->withNamespace(null);
-                case GraphQlType::STRING:
-                    return $result->withIsScalar(true)->withShortName(self::STRING)->withNamespace(null);
+            if ($type->name !== GraphQlType::ID) {
+                $result->isScalar = true;
+                $result->namespace = null;
+                switch ($type->name) {
+                    case GraphQlType::BOOLEAN:
+                        $result->shortName = self::BOOL;
+                        break;
+                    case GraphQlType::FLOAT:
+                        $result->shortName = self::FLOAT;
+                        break;
+                    case GraphQlType::INT:
+                        $result->shortName = self::INT;
+                        break;
+                    case GraphQlType::STRING:
+                        $result->shortName = self::STRING;
+                        break;
+                }
             }
         } elseif ($type instanceof InputObjectType) {
-            return $result->withShortName($type->name)->withNamespace($defaultNamespace);
+            $result->shortName = $type->name;
+            $result->namespace = $defaultNamespace;
+        } else {
+            throw new UnexpectedValueException(
+                sprintf('Unsupported GraphQL type “%s”', $type->name ?: get_class($type))
+            );
         }
-        throw new UnexpectedValueException(
-            sprintf('Unsupported GraphQL type “%s”', $type->name ?: get_class($type))
-        );
+        return $result;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNamespace(): ?string
+    {
+        return $this->namespace;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getShortName(): ?string
+    {
+        return $this->shortName;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCollection(): bool
+    {
+        return $this->isCollection;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNullable(): bool
+    {
+        return $this->isNullable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isScalar(): bool
+    {
+        return $this->isScalar;
     }
 
     public function toConversion(string $valueExpression, string $classConversionSprintfTemplate = 'new %s'): string
@@ -120,16 +161,21 @@ class Type extends ImmutableValue
     public function toParam()
     {
         return $this->shortName || $this->isCollection
-            ? ($this->isNullable ? '?' : '') . ($this->isCollection ? 'iterable' : $this->shortName) . ' '
+            ? sprintf(
+                '%s%s ',
+                $this->isNullable ? '?' : '',
+                $this->isCollection ? 'iterable' : ($this->shortName === 'static' ? 'self' : $this->shortName)
+            )
             : '';
     }
 
     public function toReturn()
     {
         return $this->shortName || $this->isCollection
-            ? (': '
-                . ($this->isNullable ? '?' : '')
-                . ($this->isCollection ? 'iterable' : ($this->shortName === 'static' ? 'self' : $this->shortName))
+            ? sprintf(
+                ': %s%s',
+                $this->isNullable ? '?' : '',
+                $this->isCollection ? 'iterable' : ($this->shortName === 'static' ? 'self' : $this->shortName)
             )
             : '';
     }

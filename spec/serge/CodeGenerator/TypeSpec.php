@@ -13,59 +13,59 @@ class TypeSpec extends ObjectBehavior
     function it_can_be_converted_from_a_GraphQL_ID_type(IDType $graphQlType)
     {
         $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->shortName->shouldBe('Uuid');
-        $this->namespace->shouldBe('\\Ramsey\\Uuid');
-        $this->isNullable->shouldBe(true);
-        $this->isCollection->shouldBe(false);
-        $this->isScalar->shouldBe(false);
+        $this->getShortName()->shouldBe('Uuid');
+        $this->getNamespace()->shouldBe('\\Ramsey\\Uuid');
+        $this->isNullable()->shouldBe(true);
+        $this->isCollection()->shouldBe(false);
+        $this->isScalar()->shouldBe(false);
     }
 
     function it_can_be_converted_from_a_GraphQL_input_object_type(InputObjectType $graphQlType)
     {
         $graphQlType->beConstructedWith([['name' => 'Money']]);
         $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->shortName->shouldBe('Money');
-        $this->namespace->shouldBe('\\My\\Project\\');
-        $this->isNullable->shouldBe(true);
-        $this->isCollection->shouldBe(false);
-        $this->isScalar->shouldBe(false);
+        $this->getShortName()->shouldBe('Money');
+        $this->getNamespace()->shouldBe('\\My\\Project\\');
+        $this->isNullable()->shouldBe(true);
+        $this->isCollection()->shouldBe(false);
+        $this->isScalar()->shouldBe(false);
     }
 
     function it_can_be_converted_from_a_GraphQL_scalar_type(StringType $graphQlType)
     {
         $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->shortName->shouldBe('string');
-        $this->namespace->shouldBe(null);
-        $this->isNullable->shouldBe(true);
-        $this->isCollection->shouldBe(false);
-        $this->isScalar->shouldBe(true);
+        $this->getShortName()->shouldBe('string');
+        $this->getNamespace()->shouldBe(null);
+        $this->isNullable()->shouldBe(true);
+        $this->isCollection()->shouldBe(false);
+        $this->isScalar()->shouldBe(true);
     }
 
     function it_exposes_the_namespace()
     {
         $this->beConstructedWith('ShortName', 'namespace');
-        $this->namespace->shouldBe('namespace');
+        $this->getNamespace()->shouldBe('namespace');
     }
 
     function it_exposes_the_short_name()
     {
         $this->beConstructedWith('ShortName');
-        $this->shortName->shouldBe('ShortName');
+        $this->getShortName()->shouldBe('ShortName');
     }
 
     function it_exposes_whether_it_is_a_collection()
     {
-        $this->isCollection->shouldBeBool();
+        $this->isCollection()->shouldBeBool();
     }
 
     function it_exposes_whether_it_is_nullable()
     {
-        $this->isNullable->shouldBeBool();
+        $this->isNullable()->shouldBeBool();
     }
 
     function it_exposes_whether_it_is_scalar()
     {
-        $this->isScalar->shouldBeBool();
+        $this->isScalar()->shouldBeBool();
     }
 
     function it_is_initializable()
@@ -118,7 +118,7 @@ class TypeSpec extends ObjectBehavior
         $this->beConstructedWith(Type::STATIC);
         $this->toDocParam()->shouldBe('static|null');
         $this->toDocReturn()->shouldBe('static|null');
-        $this->toParam()->shouldBe('?static ');
+        $this->toParam()->shouldBe('?self ');
         $this->toReturn()->shouldBe(': ?self');
         $this->toConversion('$value')->shouldBe('is_null($value) ? null : new static($value)');
     }
@@ -138,7 +138,7 @@ class TypeSpec extends ObjectBehavior
         $this->beConstructedWith(Type::STATIC, null, false);
         $this->toDocParam()->shouldBe('static');
         $this->toDocReturn()->shouldBe('static');
-        $this->toParam()->shouldBe('static ');
+        $this->toParam()->shouldBe('self ');
         $this->toReturn()->shouldBe(': self');
         $this->toConversion('$value')->shouldBe('new static($value)');
     }
