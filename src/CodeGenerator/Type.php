@@ -1,13 +1,6 @@
 <?php declare(strict_types=1);
 namespace Kepawni\Serge\CodeGenerator;
 
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type as GraphQlType;
-use UnexpectedValueException;
-
 class Type
 {
     public const BOOL = 'bool';
@@ -37,15 +30,6 @@ class Type
         $this->isScalar = in_array($shortName, [self::BOOL, self::FLOAT, self::INT, self::STRING]);
     }
 
-    public static function fromGraphQlType(GraphQlType $type, string $idClass, string $defaultNamespace)
-    {
-        return self::traverseGraphQlType(
-            $type,
-            new self(self::short($idClass), self::namespace($idClass)),
-            $defaultNamespace
-        );
-    }
-
     public static function namespace(string $className): string
     {
         return implode('\\', array_slice(explode('\\', '\\' . trim($className, '\\')), 0, -1));
@@ -56,40 +40,9 @@ class Type
         return strval(array_reverse(explode('\\', $className))[0]);
     }
 
-    private static function traverseGraphQlType(GraphQlType $type, self $result, string $defaultNamespace): self
+    public function getFullName()
     {
-        if ($type instanceof NonNull) {
-            $result->isNullable = false;
-        } elseif ($type instanceof ListOfType) {
-            $result->isCollection = true;
-        } elseif ($type instanceof ScalarType) {
-            if ($type->name !== GraphQlType::ID) {
-                $result->isScalar = true;
-                $result->namespace = null;
-                switch ($type->name) {
-                    case GraphQlType::BOOLEAN:
-                        $result->shortName = self::BOOL;
-                        break;
-                    case GraphQlType::FLOAT:
-                        $result->shortName = self::FLOAT;
-                        break;
-                    case GraphQlType::INT:
-                        $result->shortName = self::INT;
-                        break;
-                    case GraphQlType::STRING:
-                        $result->shortName = self::STRING;
-                        break;
-                }
-            }
-        } elseif ($type instanceof InputObjectType) {
-            $result->shortName = $type->name;
-            $result->namespace = $defaultNamespace;
-        } else {
-            throw new UnexpectedValueException(
-                sprintf('Unsupported GraphQL type “%s”', $type->name ?: get_class($type))
-            );
-        }
-        return $result;
+        return $this->namespace === null ? null : '\\' . trim($this->namespace, '\\') . '\\' . $this->shortName;
     }
 
     /**

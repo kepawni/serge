@@ -10,37 +10,11 @@ use Ramsey\Uuid\Uuid;
 
 class TypeSpec extends ObjectBehavior
 {
-    function it_can_be_converted_from_a_GraphQL_ID_type(IDType $graphQlType)
+    function it_exposes_the_full_name()
     {
-        $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->getShortName()->shouldBe('Uuid');
-        $this->getNamespace()->shouldBe('\\Ramsey\\Uuid');
-        $this->isNullable()->shouldBe(true);
-        $this->isCollection()->shouldBe(false);
-        $this->isScalar()->shouldBe(false);
+        $this->beConstructedWith('ShortName', 'namespace');
+        $this->getFullName()->shouldBe('\\namespace\\ShortName');
     }
-
-    function it_can_be_converted_from_a_GraphQL_input_object_type(InputObjectType $graphQlType)
-    {
-        $graphQlType->beConstructedWith([['name' => 'Money']]);
-        $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->getShortName()->shouldBe('Money');
-        $this->getNamespace()->shouldBe('\\My\\Project\\');
-        $this->isNullable()->shouldBe(true);
-        $this->isCollection()->shouldBe(false);
-        $this->isScalar()->shouldBe(false);
-    }
-
-    function it_can_be_converted_from_a_GraphQL_scalar_type(StringType $graphQlType)
-    {
-        $this->beConstructedFromGraphQlType($graphQlType, Uuid::class, '\\My\\Project\\');
-        $this->getShortName()->shouldBe('string');
-        $this->getNamespace()->shouldBe(null);
-        $this->isNullable()->shouldBe(true);
-        $this->isCollection()->shouldBe(false);
-        $this->isScalar()->shouldBe(true);
-    }
-
     function it_exposes_the_namespace()
     {
         $this->beConstructedWith('ShortName', 'namespace');
