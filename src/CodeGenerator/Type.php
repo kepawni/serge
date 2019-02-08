@@ -42,7 +42,7 @@ class Type
 
     public function getFullName()
     {
-        return $this->namespace === null ? null : '\\' . trim($this->namespace, '\\') . '\\' . $this->shortName;
+        return $this->namespace === null ? null : ltrim($this->namespace . '\\', '\\') . $this->shortName;
     }
 
     /**

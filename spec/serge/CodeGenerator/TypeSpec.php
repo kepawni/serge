@@ -1,20 +1,17 @@
 <?php declare(strict_types=1);
 namespace spec\serge\Kepawni\Serge\CodeGenerator;
 
-use GraphQL\Type\Definition\IDType;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\StringType;
 use Kepawni\Serge\CodeGenerator\Type;
 use PhpSpec\ObjectBehavior;
-use Ramsey\Uuid\Uuid;
 
 class TypeSpec extends ObjectBehavior
 {
     function it_exposes_the_full_name()
     {
         $this->beConstructedWith('ShortName', 'namespace');
-        $this->getFullName()->shouldBe('\\namespace\\ShortName');
+        $this->getFullName()->shouldBe('namespace\\ShortName');
     }
+
     function it_exposes_the_namespace()
     {
         $this->beConstructedWith('ShortName', 'namespace');
@@ -67,6 +64,26 @@ class TypeSpec extends ObjectBehavior
         $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
     }
 
+    function it_serializes_to_different_type_specifiers_when_object()
+    {
+        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid');
+        $this->toDocParam()->shouldBe('Uuid|null');
+        $this->toDocReturn()->shouldBe('Uuid|null');
+        $this->toParam()->shouldBe('?Uuid ');
+        $this->toReturn()->shouldBe(': ?Uuid');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : Uuid::fromString($value)');
+    }
+
+    function it_serializes_to_different_type_specifiers_when_object_collection()
+    {
+        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', true, true);
+        $this->toDocParam()->shouldBe('Uuid[]|iterable|null');
+        $this->toDocReturn()->shouldBe('Uuid[]|iterable|null');
+        $this->toParam()->shouldBe('?iterable ');
+        $this->toReturn()->shouldBe(': ?iterable');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : $value');
+    }
+
     function it_serializes_to_different_type_specifiers_when_required_mixed()
     {
         $this->beConstructedWith(Type::MIXED, null, false);
@@ -87,24 +104,44 @@ class TypeSpec extends ObjectBehavior
         $this->toConversion('$value')->shouldBe('$value');
     }
 
-    function it_serializes_to_different_type_specifiers_when_static()
+    function it_serializes_to_different_type_specifiers_when_required_object()
     {
-        $this->beConstructedWith(Type::STATIC);
-        $this->toDocParam()->shouldBe('static|null');
-        $this->toDocReturn()->shouldBe('static|null');
-        $this->toParam()->shouldBe('?self ');
-        $this->toReturn()->shouldBe(': ?self');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : new static($value)');
+        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', false);
+        $this->toDocParam()->shouldBe('Uuid');
+        $this->toDocReturn()->shouldBe('Uuid');
+        $this->toParam()->shouldBe('Uuid ');
+        $this->toReturn()->shouldBe(': Uuid');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('Uuid::fromString($value)');
     }
 
-    function it_serializes_to_different_type_specifiers_when_static_collection()
+    function it_serializes_to_different_type_specifiers_when_required_object_collection()
     {
-        $this->beConstructedWith(Type::STATIC, null, true, true);
-        $this->toDocParam()->shouldBe('static[]|iterable|null');
-        $this->toDocReturn()->shouldBe('static[]|iterable|null');
-        $this->toParam()->shouldBe('?iterable ');
-        $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
+        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', false, true);
+        $this->toDocParam()->shouldBe('Uuid[]|iterable');
+        $this->toDocReturn()->shouldBe('Uuid[]|iterable');
+        $this->toParam()->shouldBe('iterable ');
+        $this->toReturn()->shouldBe(': iterable');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('$value');
+    }
+
+    function it_serializes_to_different_type_specifiers_when_required_scalar()
+    {
+        $this->beConstructedWith(Type::FLOAT, null, false);
+        $this->toDocParam()->shouldBe('float');
+        $this->toDocReturn()->shouldBe('float');
+        $this->toParam()->shouldBe('float ');
+        $this->toReturn()->shouldBe(': float');
+        $this->toConversion('$value')->shouldBe('floatval($value)');
+    }
+
+    function it_serializes_to_different_type_specifiers_when_required_scalar_collection()
+    {
+        $this->beConstructedWith(Type::FLOAT, null, false, true);
+        $this->toDocParam()->shouldBe('float[]|iterable');
+        $this->toDocReturn()->shouldBe('float[]|iterable');
+        $this->toParam()->shouldBe('iterable ');
+        $this->toReturn()->shouldBe(': iterable');
+        $this->toConversion('$value')->shouldBe('$value');
     }
 
     function it_serializes_to_different_type_specifiers_when_required_static()
@@ -147,64 +184,24 @@ class TypeSpec extends ObjectBehavior
         $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
     }
 
-    function it_serializes_to_different_type_specifiers_when_required_scalar()
+    function it_serializes_to_different_type_specifiers_when_static()
     {
-        $this->beConstructedWith(Type::FLOAT, null, false);
-        $this->toDocParam()->shouldBe('float');
-        $this->toDocReturn()->shouldBe('float');
-        $this->toParam()->shouldBe('float ');
-        $this->toReturn()->shouldBe(': float');
-        $this->toConversion('$value')->shouldBe('floatval($value)');
+        $this->beConstructedWith(Type::STATIC);
+        $this->toDocParam()->shouldBe('static|null');
+        $this->toDocReturn()->shouldBe('static|null');
+        $this->toParam()->shouldBe('?self ');
+        $this->toReturn()->shouldBe(': ?self');
+        $this->toConversion('$value')->shouldBe('is_null($value) ? null : new static($value)');
     }
 
-    function it_serializes_to_different_type_specifiers_when_required_scalar_collection()
+    function it_serializes_to_different_type_specifiers_when_static_collection()
     {
-        $this->beConstructedWith(Type::FLOAT, null, false, true);
-        $this->toDocParam()->shouldBe('float[]|iterable');
-        $this->toDocReturn()->shouldBe('float[]|iterable');
-        $this->toParam()->shouldBe('iterable ');
-        $this->toReturn()->shouldBe(': iterable');
-        $this->toConversion('$value')->shouldBe('$value');
-    }
-
-    function it_serializes_to_different_type_specifiers_when_object()
-    {
-        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid');
-        $this->toDocParam()->shouldBe('Uuid|null');
-        $this->toDocReturn()->shouldBe('Uuid|null');
-        $this->toParam()->shouldBe('?Uuid ');
-        $this->toReturn()->shouldBe(': ?Uuid');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : Uuid::fromString($value)');
-    }
-
-    function it_serializes_to_different_type_specifiers_when_object_collection()
-    {
-        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', true, true);
-        $this->toDocParam()->shouldBe('Uuid[]|iterable|null');
-        $this->toDocReturn()->shouldBe('Uuid[]|iterable|null');
+        $this->beConstructedWith(Type::STATIC, null, true, true);
+        $this->toDocParam()->shouldBe('static[]|iterable|null');
+        $this->toDocReturn()->shouldBe('static[]|iterable|null');
         $this->toParam()->shouldBe('?iterable ');
         $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : $value');
-    }
-
-    function it_serializes_to_different_type_specifiers_when_required_object()
-    {
-        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', false);
-        $this->toDocParam()->shouldBe('Uuid');
-        $this->toDocReturn()->shouldBe('Uuid');
-        $this->toParam()->shouldBe('Uuid ');
-        $this->toReturn()->shouldBe(': Uuid');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('Uuid::fromString($value)');
-    }
-
-    function it_serializes_to_different_type_specifiers_when_required_object_collection()
-    {
-        $this->beConstructedWith('Uuid', '\\Ramsey\\Uuid', false, true);
-        $this->toDocParam()->shouldBe('Uuid[]|iterable');
-        $this->toDocReturn()->shouldBe('Uuid[]|iterable');
-        $this->toParam()->shouldBe('iterable ');
-        $this->toReturn()->shouldBe(': iterable');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('$value');
+        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_void()
