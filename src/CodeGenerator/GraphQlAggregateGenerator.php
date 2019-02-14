@@ -21,15 +21,19 @@ class GraphQlAggregateGenerator
     /** @var GraphQlSchemaGateway */
     private $schemaGateway;
     /** @var string */
+    private $eventPayloadNamespace;
+    /** @var string */
     private $valueObjectNamespace;
 
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
         string $aggregateNamespace,
+        string $eventPayloadNamespace,
         string $valueObjectNamespace
     ) {
         $this->schemaGateway = $schemaGateway;
         $this->aggregateNamespace = $aggregateNamespace;
+        $this->eventPayloadNamespace = $eventPayloadNamespace;
         $this->valueObjectNamespace = $valueObjectNamespace;
     }
 
@@ -40,7 +44,19 @@ class GraphQlAggregateGenerator
         foreach ($this->schemaGateway->iterateAggregateMethods($aggregate) as $action) {
             $classifier->addMethod($this->actionToMethod($aggregate, $action));
         }
+        foreach ($this->schemaGateway->iterateAggregateEvents($aggregate) as $event) {
+            $classifier->addMethod($this->eventToMethod($event));
+        }
         return $classifier->extend(new Classifier('SimpleAggregateRoot', 'Kepawni\Twilted\Basic'));
+    }
+
+    private function eventToMethod(FieldDefinition $event): Method
+    {
+        return (new Method('when'.$event->name))
+            ->makeProtected()
+            ->makeReturn(new Type('void'))
+            ->appendParameter(new Parameter('event', new Type($event->name, $this->eventPayloadNamespace, false)))
+        ;
     }
 
     private function actionToMethod(ObjectType $aggregate, FieldDefinition $action): Method
