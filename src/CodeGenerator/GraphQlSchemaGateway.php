@@ -62,7 +62,7 @@ class GraphQlSchemaGateway
     /**
      * @param Schema $schema
      *
-     * @return InputObjectType[]|iterable
+     * @return ObjectType[]|iterable
      * @throws InvariantViolation
      * @throws UnexpectedValueException
      */
