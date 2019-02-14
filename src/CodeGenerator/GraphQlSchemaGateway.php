@@ -2,6 +2,7 @@
 namespace Kepawni\Serge\CodeGenerator;
 
 use GraphQL\Error\InvariantViolation;
+use GraphQL\Type\Definition\BooleanType;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\IDType;
 use GraphQL\Type\Definition\InputObjectType;
@@ -40,6 +41,26 @@ class GraphQlSchemaGateway
                 $aggregateName = substr($type->name, 0, -6);
                 $this->guardEventDescriptorAggregate($schema, $aggregateName);
                 yield $aggregateName => $type;
+            }
+        }
+    }
+
+    /**
+     * @param Schema $schema
+     * @param ObjectType $aggregate
+     *
+     * @return FieldDefinition[]|iterable
+     * @throws UnexpectedValueException
+     */
+    public function iterateAggregateEvents(Schema $schema, ObjectType $aggregate): iterable
+    {
+        if ($schema->hasType($aggregate->name . 'Events')) {
+            $type = $schema->getType($aggregate->name . 'Events');
+            if ($type instanceof InterfaceType) {
+                foreach ($type->getFields() as $fieldDefinition) {
+                    $this->guardEventFieldType($fieldDefinition, $aggregate->name);
+                    yield $fieldDefinition;
+                }
             }
         }
     }
@@ -144,6 +165,21 @@ class GraphQlSchemaGateway
         if (substr($name, -6) !== 'Events') {
             throw new UnexpectedValueException(
                 'Event descriptors should be named like an aggregate with the suffix “Events”'
+            );
+        }
+    }
+
+    private function guardEventFieldType(FieldDefinition $methodField, string $aggregateName): void
+    {
+        if (!($methodField->getType() instanceof NonNull)
+            || !($methodField->getType()->getWrappedType() instanceof BooleanType)
+        ) {
+            throw new UnexpectedValueException(
+                sprintf(
+                    'The return type of the %s\'s “%s” event should be “Boolean!”',
+                    $aggregateName,
+                    $methodField->name
+                )
             );
         }
     }

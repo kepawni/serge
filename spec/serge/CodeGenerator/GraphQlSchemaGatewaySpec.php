@@ -412,6 +412,28 @@ EOD
         );
     }
 
+    function it_can_iterate_events_for_an_aggregate()
+    {
+        /** @var ObjectType $aggregate */
+        $aggregate = $this->schema->getType('Customer');
+        $events = $this->iterateAggregateEvents($this->schema, $aggregate);
+        $descriptor =  $this->schema->getType('CustomerEvents');
+        $events->shouldIterateAs(
+            [
+                $descriptor->getField('InBusinessWasEngaged'),
+                $descriptor->getField('CustomerWasRelocated'),
+                $descriptor->getField('CustomerWasRenamed'),
+                $descriptor->getField('FromPrisonWasFled'),
+                $descriptor->getField('ForHelpWasCried'),
+                $descriptor->getField('PorridgeWasStirred'),
+                $descriptor->getField('BottlesWereLabelled'),
+                $descriptor->getField('BeforeTheQueenWasKneeled'),
+                $descriptor->getField('FurnitureWasHauled'),
+                $descriptor->getField('KnownProblemsWereBelittled'),
+            ]
+        );
+    }
+
     function it_does_not_convert_a_GraphQL_interface_type(InterfaceType $graphQlType)
     {
         $this->shouldThrow(UnexpectedValueException::class)->duringConvertType(
