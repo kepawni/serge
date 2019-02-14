@@ -18,6 +18,13 @@ use UnexpectedValueException;
 
 class GraphQlSchemaGateway
 {
+    private $schema;
+
+    public function __construct(Schema $schema)
+    {
+        $this->schema = $schema;
+    }
+
     public function convertType(GraphQlType $type, string $idClass, string $defaultNamespace): Type
     {
         return $this->traverseGraphQlType(
@@ -28,34 +35,31 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @param Schema $schema
-     *
      * @return InterfaceType[]|iterable
      * @throws UnexpectedValueException
      */
-    public function iterateAggregateEventDescriptors(Schema $schema): iterable
+    public function iterateAggregateEventDescriptors(): iterable
     {
-        foreach ($schema->getTypeMap() as $type) {
+        foreach ($this->schema->getTypeMap() as $type) {
             if ($type instanceof InterfaceType) {
                 $this->guardEventDescriptorName($type->name);
                 $aggregateName = substr($type->name, 0, -6);
-                $this->guardEventDescriptorAggregate($schema, $aggregateName);
+                $this->guardEventDescriptorAggregate($aggregateName);
                 yield $aggregateName => $type;
             }
         }
     }
 
     /**
-     * @param Schema $schema
      * @param ObjectType $aggregate
      *
      * @return FieldDefinition[]|iterable
      * @throws UnexpectedValueException
      */
-    public function iterateAggregateEvents(Schema $schema, ObjectType $aggregate): iterable
+    public function iterateAggregateEvents(ObjectType $aggregate): iterable
     {
-        if ($schema->hasType($aggregate->name . 'Events')) {
-            $type = $schema->getType($aggregate->name . 'Events');
+        if ($this->schema->hasType($aggregate->name . 'Events')) {
+            $type = $this->schema->getType($aggregate->name . 'Events');
             if ($type instanceof InterfaceType) {
                 foreach ($type->getFields() as $fieldDefinition) {
                     $this->guardEventFieldType($fieldDefinition, $aggregate->name);
@@ -81,16 +85,14 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @param Schema $schema
-     *
      * @return ObjectType[]|iterable
      * @throws InvariantViolation
      * @throws UnexpectedValueException
      */
-    public function iterateAggregates(Schema $schema): iterable
+    public function iterateAggregates(): iterable
     {
         /** @var FieldDefinition $fieldDefinition */
-        foreach ($schema->getMutationType()->getFields() as $fieldDefinition) {
+        foreach ($this->schema->getMutationType()->getFields() as $fieldDefinition) {
             $this->guardAggregateMutatorType($fieldDefinition);
             $this->guardAggregateMutatorArgs($fieldDefinition, $fieldDefinition->name);
             $this->guardAggregateMutatorIdArgType($fieldDefinition, $fieldDefinition->name);
@@ -99,13 +101,11 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @param Schema $schema
-     *
      * @return InputObjectType[]|iterable
      */
-    public function iterateValueObjects(Schema $schema): iterable
+    public function iterateValueObjects(): iterable
     {
-        foreach ($schema->getTypeMap() as $type) {
+        foreach ($this->schema->getTypeMap() as $type) {
             if ($type instanceof InputObjectType) {
                 yield $type;
             }
@@ -151,9 +151,11 @@ class GraphQlSchemaGateway
         }
     }
 
-    private function guardEventDescriptorAggregate(Schema $schema, string $aggregateName): void
+    private function guardEventDescriptorAggregate(string $aggregateName): void
     {
-        if (!$schema->hasType($aggregateName) || !($schema->getType($aggregateName) instanceof ObjectType)) {
+        if (!$this->schema->hasType($aggregateName)
+            || !($this->schema->getType($aggregateName) instanceof ObjectType)
+        ) {
             throw new UnexpectedValueException(
                 sprintf('Could not find an aggregate “%s” for the event descriptor “%1$sEvent”', $aggregateName)
             );

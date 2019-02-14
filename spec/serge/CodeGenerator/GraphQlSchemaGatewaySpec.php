@@ -95,6 +95,9 @@ interface InvoiceEvents {
 EOD
         );
     }
+    function let() {
+        $this->beConstructedWith($this->schema);
+    }
 
     function it_can_convert_a_GraphQL_ID_type(IDType $graphQlType)
     {
@@ -349,7 +352,7 @@ EOD
 
     function it_can_iterate_aggregate_event_types_encoded_as_schema_interfaces()
     {
-        $descriptors = $this->iterateAggregateEventDescriptors($this->schema);
+        $descriptors = $this->iterateAggregateEventDescriptors();
         $descriptors->shouldIterateAs(
             [
                 'Customer' => $this->schema->getType('CustomerEvents'),
@@ -363,7 +366,7 @@ EOD
 
     function it_can_iterate_aggregates_encoded_as_return_types_of_methods_in_the_top_level_mutator()
     {
-        $aggregates = $this->iterateAggregates($this->schema);
+        $aggregates = $this->iterateAggregates();
         $aggregates->shouldIterateAs(
             [
                 $this->schema->getType('Customer'),
@@ -377,7 +380,7 @@ EOD
 
     function it_can_iterate_value_objects_encoded_as_input_types()
     {
-        $valueObjects = $this->iterateValueObjects($this->schema);
+        $valueObjects = $this->iterateValueObjects();
         $valueObjects->shouldIterateAs(
             [
                 $this->schema->getType('Address'),
@@ -416,7 +419,7 @@ EOD
     {
         /** @var ObjectType $aggregate */
         $aggregate = $this->schema->getType('Customer');
-        $events = $this->iterateAggregateEvents($this->schema, $aggregate);
+        $events = $this->iterateAggregateEvents($aggregate);
         $descriptor =  $this->schema->getType('CustomerEvents');
         $events->shouldIterateAs(
             [
