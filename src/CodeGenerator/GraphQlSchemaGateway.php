@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Kepawni\Serge\CodeGenerator;
 
+use GraphQL\Error\Error;
 use GraphQL\Error\InvariantViolation;
 use GraphQL\Type\Definition\BooleanType;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -58,7 +59,7 @@ class GraphQlSchemaGateway
      */
     public function iterateAggregateEvents(ObjectType $aggregate): iterable
     {
-        if ($this->schema->hasType($aggregate->name . 'Events')) {
+        try {
             $type = $this->schema->getType($aggregate->name . 'Events');
             if ($type instanceof InterfaceType) {
                 foreach ($type->getFields() as $fieldDefinition) {
@@ -66,6 +67,9 @@ class GraphQlSchemaGateway
                     yield $fieldDefinition;
                 }
             }
+        } catch (Error $e) {
+            // ignore errors
+            // $this->schema->hasType() also throws this, so we had to try...catch anyway
         }
     }
 
@@ -153,13 +157,17 @@ class GraphQlSchemaGateway
 
     private function guardEventDescriptorAggregate(string $aggregateName): void
     {
-        if (!$this->schema->hasType($aggregateName)
-            || !($this->schema->getType($aggregateName) instanceof ObjectType)
-        ) {
-            throw new UnexpectedValueException(
-                sprintf('Could not find an aggregate “%s” for the event descriptor “%1$sEvent”', $aggregateName)
-            );
+        try {
+            if ($this->schema->getType($aggregateName) instanceof ObjectType) {
+                return;
+            }
+        } catch (Error $error) {
+            // ignore errors
+            // $this->schema->hasType() also throws this, so we had to try...catch anyway
         }
+        throw new UnexpectedValueException(
+            sprintf('Could not find an aggregate “%s” for the event descriptor “%1$sEvent”', $aggregateName)
+        );
     }
 
     private function guardEventDescriptorName(string $name): void
