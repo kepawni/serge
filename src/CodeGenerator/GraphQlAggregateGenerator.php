@@ -4,6 +4,7 @@ namespace Kepawni\Serge\CodeGenerator;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ObjectType;
+use Kepawni\Twilted\Basic\SimpleAggregateRoot;
 use Kepawni\Twilted\EntityIdentifier;
 
 class GraphQlAggregateGenerator
@@ -47,7 +48,7 @@ class GraphQlAggregateGenerator
         foreach ($this->schemaGateway->iterateAggregateEvents($aggregate) as $event) {
             $classifier->addMethod($this->eventToMethod($event));
         }
-        return $classifier->extend(new Classifier('SimpleAggregateRoot', 'Kepawni\Twilted\Basic'));
+        return $classifier->extend(new Classifier(Type::short(SimpleAggregateRoot::class), Type::namespace(SimpleAggregateRoot::class)));
     }
 
     private function eventToMethod(FieldDefinition $event): Method
@@ -73,7 +74,7 @@ class GraphQlAggregateGenerator
                 ->appendParameter(
                     new Parameter(
                         sprintf('%sId', lcfirst($aggregate->name)),
-                        new Type('EntityIdentifier', 'Kepawni\Twilted', false)
+                        new Type(Type::short(EntityIdentifier::class), Type::namespace(EntityIdentifier::class), false)
                     )
                 )
                 ->addContentString(
