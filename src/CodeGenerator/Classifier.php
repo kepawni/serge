@@ -5,6 +5,7 @@ class Classifier
 {
     private $abstract;
     private $constants;
+    private $docComment;
     private $final;
     private $interface;
     private $interfaces;
@@ -19,6 +20,7 @@ class Classifier
     {
         $this->abstract = false;
         $this->constants = [];
+        $this->docComment = null;
         $this->final = false;
         $this->interface = false;
         $this->interfaces = [];
@@ -58,9 +60,10 @@ class Classifier
             )
         );
         return sprintf(
-            "<?php declare(strict_types=1);\n%s%s\n%s%s%s%s%s%s\n%s\n",
+            "<?php declare(strict_types=1);\n%s%s\n%s%s%s%s%s%s%s\n%s\n",
             $this->namespace ? 'namespace ' . trim($this->namespace, '\\') . ";\n" : '',
             $this->usedClasses ? "\nuse " . implode(";\nuse ", array_unique($this->usedClasses)) . ";\n" : '',
+            $this->docComment ?: '',
             $this->abstract ? 'abstract ' : '',
             $this->final ? 'final ' : '',
             $this->interface ? 'interface ' : 'class ',
@@ -76,6 +79,15 @@ class Classifier
     public function addConstant(string $name, $value): self
     {
         $this->constants[$name] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return $this;
+    }
+
+    public function addDocCommentLine(string $line): self
+    {
+        if (is_null($this->docComment)) {
+            $this->docComment = new CodeBlock("/**\n * ", "\n */\n", "\n * ");
+        }
+        $this->docComment->addContentString($line);
         return $this;
     }
 
