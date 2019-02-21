@@ -200,6 +200,12 @@ class Classifier
         return $this;
     }
 
+    public function useClass(string $fullyQualifiedClassName): self
+    {
+        $this->usedClasses[] = trim($fullyQualifiedClassName, '\\');
+        return $this;
+    }
+
     private function compareMethods(Method $a, Method $b): int
     {
         return intval($b->isStatic()) - intval($a->isStatic())
