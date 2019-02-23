@@ -34,7 +34,8 @@ class Classifier
 
     public function __toString(): string
     {
-        sort($this->usedClasses);
+        $usedClasses = array_filter($this->usedClasses, [$this, 'hasDifferentNamespace']);
+        sort($usedClasses);
         sort($this->interfaces);
         ksort($this->constants);
         usort($this->properties, [$this, 'compareProperties']);
@@ -62,7 +63,7 @@ class Classifier
         return sprintf(
             "<?php declare(strict_types=1);\n%s%s\n%s%s%s%s%s%s%s\n%s\n",
             $this->namespace ? 'namespace ' . trim($this->namespace, '\\') . ";\n" : '',
-            $this->usedClasses ? "\nuse " . implode(";\nuse ", array_unique($this->usedClasses)) . ";\n" : '',
+            $usedClasses ? "\nuse " . implode(";\nuse ", array_unique($usedClasses)) . ";\n" : '',
             $this->docComment ?: '',
             $this->abstract ? 'abstract ' : '',
             $this->final ? 'final ' : '',
@@ -230,6 +231,11 @@ class Classifier
     private function formatConstant(string $name, string $value): string
     {
         return sprintf('const %s = %s;', $name, $value);
+    }
+
+    private function hasDifferentNamespace(string $className)
+    {
+        return trim(Type::namespace($className), '\\') !== trim($this->namespace, '\\');
     }
 
     private function methodSignature(Method $method): string
