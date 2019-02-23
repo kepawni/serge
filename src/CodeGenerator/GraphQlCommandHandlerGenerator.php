@@ -114,7 +114,7 @@ class GraphQlCommandHandlerGenerator
                     sprintf('$methodArgs[\'%s\']', $argument->name),
                     $type->getFullName() === AggregateUuid::class
                         ? '%s::unfold'
-                        : '%s::fromGraphQlMutation'
+                        : '%s::fromHashMap'
                 ),
                 $argument->name
             );
