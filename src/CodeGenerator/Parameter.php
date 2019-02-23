@@ -3,6 +3,11 @@ namespace Kepawni\Serge\CodeGenerator;
 
 class Parameter
 {
+    const DT_CONSTANT = 2;
+    const DT_NONE = 0;
+    const DT_SCALAR = 1;
+    private $defaultType = self::DT_NONE;
+    private $defaultValue = null;
     private $name;
     private $type;
 
@@ -14,7 +19,21 @@ class Parameter
 
     public function __toString()
     {
-        return $this->getType()->toParam() . '$' . $this->getName();
+        return sprintf(
+            '%s$%s%s%s%s',
+            $this->getType()->toParam(),
+            $this->getName(),
+            $this->defaultType !== self::DT_NONE ? ' = ' : '',
+            $this->defaultType === self::DT_SCALAR ? json_encode($this->defaultValue) : '',
+            $this->defaultType === self::DT_CONSTANT ? $this->defaultValue : ''
+        );
+    }
+
+    public function dropDefaultValue(): self
+    {
+        $this->defaultValue = null;
+        $this->defaultType = self::DT_NONE;
+        return $this;
     }
 
     /**
@@ -31,5 +50,19 @@ class Parameter
     public function getType(): Type
     {
         return $this->type;
+    }
+
+    public function specifyDefaultConstant(string $constantName): self
+    {
+        $this->defaultValue = $constantName;
+        $this->defaultType = self::DT_CONSTANT;
+        return $this;
+    }
+
+    public function specifyDefaultValue($defaultValue): self
+    {
+        $this->defaultValue = $defaultValue;
+        $this->defaultType = self::DT_SCALAR;
+        return $this;
     }
 }
