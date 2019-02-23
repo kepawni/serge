@@ -7,6 +7,7 @@ use ReflectionParameter;
 class Method extends IndentedMultilineBlock
 {
     private $abstract;
+    private $docComment;
     private $final;
     private $name;
     private $parameters;
@@ -18,6 +19,7 @@ class Method extends IndentedMultilineBlock
     {
         parent::__construct();
         $this->abstract = false;
+        $this->docComment = null;
         $this->final = false;
         $this->name = $name;
         $this->parameters = [];
@@ -28,12 +30,20 @@ class Method extends IndentedMultilineBlock
 
     public function __toString(): string
     {
-        return $this->generateSignature() . ($this->isAbstract()
+        return ($this->docComment ?: '') . $this->generateSignature() . (
+            $this->isAbstract()
                 ? ';'
-                : PHP_EOL
-                . $this->getPrefix()
-                . $this->contentToString()
-                . $this->getSuffix());
+                : PHP_EOL . $this->getPrefix() . $this->contentToString() . $this->getSuffix()
+            );
+    }
+
+    public function addDocCommentLine(string $line): self
+    {
+        if (is_null($this->docComment)) {
+            $this->docComment = new CodeBlock("/**\n * ", "\n */\n", "\n * ");
+        }
+        $this->docComment->addContentString($line);
+        return $this;
     }
 
     public function appendParameter(Parameter $parameter): self
