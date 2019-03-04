@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:ks="https://github.com/kepawni/serge"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified"
+        targetNamespace="https://github.com/kepawni/serge">
+    <element name="serge-code-generator">
+        <complexType>
+            <sequence>
+                <element name="source">
+                    <complexType>
+                        <attribute type="string" name="graphql-schema"/>
+                    </complexType>
+                </element>
+                <element name="destination">
+                    <complexType>
+                        <sequence>
+                            <element name="handler" type="ks:naming"/>
+                            <element name="aggregate" type="ks:naming"/>
+                            <element name="valueObject" type="ks:naming"/>
+                            <element name="eventPayload" type="ks:naming"/>
+                        </sequence>
+                        <attribute type="string" name="directory"/>
+                        <attribute type="string" name="namespace"/>
+                    </complexType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+    <complexType name="naming">
+        <attribute type="string" name="sub-namespace"/>
+        <attribute type="string" name="prefix"/>
+        <attribute type="string" name="suffix"/>
+    </complexType>
+</schema>
