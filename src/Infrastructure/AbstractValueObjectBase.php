@@ -9,6 +9,8 @@ abstract class AbstractValueObjectBase extends ImmutableValue implements Foldabl
 {
     const JSON_OPTIONS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
+    abstract public static function fromHashMap(array $mutationArgs): self;
+
     /**
      * @param string $leaflet
      *
