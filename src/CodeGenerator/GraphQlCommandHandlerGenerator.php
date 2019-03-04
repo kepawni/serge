@@ -122,6 +122,6 @@ class GraphQlCommandHandlerGenerator
                 $method->useClass($type->getFullName());
             }
         }
-        return $method;
+        return $method->useClass(AggregateUuid::class);
     }
 }

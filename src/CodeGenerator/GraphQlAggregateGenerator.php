@@ -11,6 +11,8 @@ class GraphQlAggregateGenerator
 {
     /** @var string */
     private $aggregateNamespace;
+    /** @var string */
+    private $eventPayloadNamespace;
     /** @var string[] */
     private $predicates = [
         'bool' => 'MatchesCurrentState',
@@ -21,8 +23,6 @@ class GraphQlAggregateGenerator
     ];
     /** @var GraphQlSchemaGateway */
     private $schemaGateway;
-    /** @var string */
-    private $eventPayloadNamespace;
     /** @var string */
     private $valueObjectNamespace;
 
@@ -46,18 +46,11 @@ class GraphQlAggregateGenerator
             $classifier->addMethod($this->actionToMethod($aggregate, $action));
         }
         foreach ($this->schemaGateway->iterateAggregateEvents($aggregate) as $event) {
-            $classifier->addMethod($this->eventToMethod($event));
+            $classifier->addMethod($this->eventToMethod($event, $aggregate->name));
         }
-        return $classifier->extend(new Classifier(Type::short(SimpleAggregateRoot::class), Type::namespace(SimpleAggregateRoot::class)));
-    }
-
-    private function eventToMethod(FieldDefinition $event): Method
-    {
-        return (new Method('when'.$event->name))
-            ->makeProtected()
-            ->makeReturn(new Type('void'))
-            ->appendParameter(new Parameter('event', new Type($event->name, $this->eventPayloadNamespace, false)))
-        ;
+        return $classifier->extend(
+            new Classifier(Type::short(SimpleAggregateRoot::class), Type::namespace(SimpleAggregateRoot::class))
+        );
     }
 
     private function actionToMethod(ObjectType $aggregate, FieldDefinition $action): Method
@@ -135,6 +128,20 @@ class GraphQlAggregateGenerator
                 preg_replace(['<[^aeiou][aeiou]([bcdfgklmnprtz])$>', '<y$>', '<e+$>'], ['\\0\\1', 'i', ''], $words[0])
             )
             . 'ed';
+    }
+
+    private function eventToMethod(FieldDefinition $event, string $aggregateName): Method
+    {
+        return (new Method('when' . $event->name))
+            ->makeProtected()
+            ->makeReturn(new Type('void'))
+            ->appendParameter(
+                new Parameter(
+                    'event',
+                    new Type($event->name, $this->eventPayloadNamespace . '\\' . $aggregateName, false)
+                )
+            )
+            ;
     }
 
     private function processArguments(Method $method, FieldDefinition $action, CodeBlock $eventInvocation): void
