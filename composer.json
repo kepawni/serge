@@ -17,11 +17,5 @@
     "ext-json": "*",
     "webonyx/graphql-php": "^0.13.0",
     "kepawni/twilted": "^1.1"
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/lingoda/phpspec-code-coverage.git"
-    }
-  ]
+  }
 }
