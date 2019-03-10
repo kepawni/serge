@@ -5,7 +5,7 @@ use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
-use Kepawni\Serge\Infrastructure\GraphQL\CqrsCommandHandler;
+use Kepawni\Twilted\Basic\SimpleCommandHandler;
 use Kepawni\Twilted\Basic\AggregateUuid;
 
 class GraphQlCommandHandlerGenerator
@@ -54,7 +54,7 @@ class GraphQlCommandHandlerGenerator
             $classifier->addMethod($this->actionToMethod($aggregate, $action));
         }
         return $classifier->extend(
-            new Classifier(Type::short(CqrsCommandHandler::class), Type::namespace(CqrsCommandHandler::class))
+            new Classifier(Type::short(SimpleCommandHandler::class), Type::namespace(SimpleCommandHandler::class))
         );
     }
 
