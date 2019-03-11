@@ -1,77 +1,100 @@
 <?php declare(strict_types=1);
-use deswerve\colin\CommandLineInterface;
-use Kepawni\Serge\CodeGenerator\EventPayloadGenerator;
-use Kepawni\Serge\CodeGenerator\ValueObjectGenerator;
-use PhpSpec\Factory\ReflectionFactory;
+use GraphQL\Utils\BuildSchema;
+use Kepawni\Serge\CodeGenerator\ClassWriter;
+use Kepawni\Serge\CodeGenerator\GraphQlAggregateGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlCommandHandlerGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlEventPayloadGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlSchemaGateway;
+use Kepawni\Serge\CodeGenerator\GraphQlValueObjectGenerator;
 
-require_once locateAutoloader($argv ?? []);
-try {
-    $cli = createCommandLineInterpreter();
-    $commandLine = $cli->processCommandLine($argv);
-    if ($commandLine->options['help']->count >= 1) {
-        echo $cli;
-    } else {
-        processNamespaceDescriptors(
-            scanFilesForInterfaceNames($commandLine->params),
-            $commandLine,
-            new ReflectionFactory()
+$autoloaderDir = locateAutoloaderDir($argv ?? []);
+$configFile = $autoloaderDir . '/../serge.config.xml';
+$schemaFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
+require_once $autoloaderDir . '/autoload.php';
+$config = new DOMDocument();
+if (!$config->load($configFile)) {
+    throw new RuntimeException('Failed to load config file');
+}
+if (!$config->schemaValidate($schemaFile)) {
+    throw new RuntimeException('Failed to validate config file against XSD schema');
+};
+$xpath = new DOMXPath($config);
+if (!$xpath->registerNamespace('s', 'https://github.com/kepawni/serge')) {
+    throw new RuntimeException('Failed to register namespace of config file');
+}
+$namespaceRootDirectory = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@directory)');
+$rootNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@namespace)');
+$handlerNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@sub-namespace)');
+$aggregateNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@sub-namespace)');
+$valueObjectNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@sub-namespace)');
+$eventPayloadNamespace = $xpath->evaluate(
+    'string(/s:serge-code-generator/s:destination/s:event-payload/@sub-namespace)'
+);
+$aggregatePrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@prefix)');
+$aggregateSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@suffix)');
+$handlerPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@prefix)');
+$handlerSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@suffix)');
+$valueObjectPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@prefix)');
+$valueObjectSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@suffix)');
+$eventPayloadPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@prefix)');
+$eventPayloadSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@suffix)');
+$schema = BuildSchema::build(
+    file_get_contents($xpath->evaluate('string(/s:serge-code-generator/s:source/@graphql-schema)'))
+);
+$schemaGateway = new GraphQlSchemaGateway($schema);
+$writer = new ClassWriter($namespaceRootDirectory, $rootNamespace);
+$aggregateGenerator = new GraphQlAggregateGenerator(
+    $schemaGateway,
+    $aggregateNamespace, $aggregatePrefix, $aggregateSuffix,
+    $eventPayloadNamespace, $eventPayloadPrefix, $eventPayloadSuffix,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$commandHandlerGenerator = new GraphQlCommandHandlerGenerator(
+    $schemaGateway,
+    $handlerNamespace, $handlerPrefix, $handlerSuffix,
+    $aggregateNamespace, $aggregatePrefix, $aggregateSuffix,
+    $eventPayloadNamespace,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$eventPayloadGenerator = new GraphQlEventPayloadGenerator(
+    $schemaGateway,
+    $eventPayloadNamespace, $eventPayloadPrefix, $eventPayloadSuffix,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$valueObjectGenerator = new GraphQlValueObjectGenerator(
+    $schemaGateway,
+    $valueObjectNamespace,
+    $valueObjectPrefix,
+    $valueObjectSuffix
+);
+foreach ($schemaGateway->iterateAggregates() as $aggregate) {
+    $writer->saveToFile(
+        $aggregatePrefix . $aggregate->name . $aggregateSuffix,
+        $aggregateNamespace,
+        $aggregateGenerator->process($aggregate)
+    );
+    $writer->saveToFile(
+        $handlerPrefix . $aggregate->name . $handlerSuffix,
+        $handlerNamespace,
+        $commandHandlerGenerator->process($aggregate)
+    );
+    foreach ($schemaGateway->iterateAggregateEvents($aggregate) as $event) {
+        $writer->saveToFile(
+            $eventPayloadPrefix . $event->name . $eventPayloadSuffix,
+            str_replace('#', $aggregate->name, $eventPayloadNamespace),
+            $eventPayloadGenerator->process($event, $aggregate->name)
         );
     }
-} catch (Throwable $e) {
-    printf('%s: %s%4$s%4$s%s', get_class($e), $e->getMessage(), $cli ?? '', PHP_EOL);
+}
+foreach ($schemaGateway->iterateValueObjects() as $valueObject) {
+    $writer->saveToFile(
+        $valueObjectPrefix . $valueObject->name . $valueObjectSuffix,
+        $valueObjectNamespace,
+        $valueObjectGenerator->process($valueObject)
+    );
 }
 //
-function convertNamespaceSeparators(?string $namespace): ?string
-{
-    return $namespace ? preg_replace('<\\W+>', '\\', $namespace) : null;
-}
-
-function createCodeGeneratorForType($commandLine)
-{
-    switch ($commandLine->options['type']->values[0]) {
-        case 'EventPayload':
-            return new EventPayloadGenerator();
-        case 'ValueObject':
-            return new ValueObjectGenerator();
-        default:
-            throw new RuntimeException(
-                sprintf('Type %s not supported', $commandLine->options['type']->values[0])
-            );
-    }
-}
-
-function createCommandLineInterpreter(): CommandLineInterface
-{
-    return (new CommandLineInterface('serge-codegen', ['{--help | -h}', 'OPTIONS DESCRIPTOR_FILES...',]))
-        ->addOption('type', 'One of EventPayload, ValueObject', ['TYPE'], 't')
-        ->addOption(
-            'root-ns',
-            'The root namespace for the generated classes (which may declare sub-namespaces)',
-            ['NAMESPACE'],
-            'r'
-        )
-        ->addOption(
-            'param-ns',
-            'The namespace to assume for undeclared value object params (which may declare sub-namespaces)',
-            ['NAMESPACE'],
-            'p',
-            true,
-            [null]
-        )
-        ->addOption('dir', 'The target directory corresponding to the root namespace', ['PATH'], 'd')
-        ->addOption('help', 'Show this usage info and ignore any other options', null, 'h', true)
-        ;
-}
-
-function guardNonEmpty(array $namespaceInterfaces): array
-{
-    if (!$namespaceInterfaces) {
-        throw new Exception('Could not find any namespace descriptor interfaces in the specified file paths.');
-    }
-    return $namespaceInterfaces;
-}
-
-function locateAutoloader(array $argv): string
+function locateAutoloaderDir(array $argv): string
 {
     if (PHP_SAPI !== 'cli') {
         throw new RuntimeException('This is a command line executable');
@@ -82,35 +105,14 @@ function locateAutoloader(array $argv): string
     $realpath = realpath(dirname($argv[0]));
     $lastTwo = implode('/', array_slice(explode(DIRECTORY_SEPARATOR, $realpath), -2));
     if ($lastTwo === 'vendor/bin') {
-        return $realpath . '/../autoload.php';
+        return $realpath . '/..';
     }
     $path = explode(DIRECTORY_SEPARATOR, realpath(__DIR__));
     foreach (array_keys($path) as $i) {
-        $filename = implode('/', array_slice($path, 0, -$i)) . '/vendor/autoload.php';
+        $filename = implode('/', array_slice($path, 0, -$i)) . '/vendor';
         if (is_file($filename)) {
             return $filename;
         }
     }
-    return __DIR__ . '/../vendor/autoload.php';
-}
-
-function processNamespaceDescriptors($namespaceInterfaces, $commandLine, $reflector): void
-{
-    foreach (guardNonEmpty($namespaceInterfaces) as $namespaceClass) {
-        createCodeGeneratorForType($commandLine)->processNamespaceDescriptorClass(
-            $reflector->create($namespaceClass),
-            $commandLine->options['dir']->values[0],
-            convertNamespaceSeparators($commandLine->options['root-ns']->values[0]),
-            convertNamespaceSeparators($commandLine->options['param-ns']->values[0])
-        );
-    }
-}
-
-function scanFilesForInterfaceNames(array $files): array
-{
-    $interfaces = get_declared_interfaces();
-    foreach ($files as $file) {
-        include_once $file;
-    }
-    return array_diff(get_declared_interfaces(), $interfaces);
+    return __DIR__ . '/../vendor';
 }
