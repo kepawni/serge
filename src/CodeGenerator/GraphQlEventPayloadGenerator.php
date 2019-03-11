@@ -18,19 +18,27 @@ class GraphQlEventPayloadGenerator
     private $schemaGateway;
     /** @var string */
     private $valueObjectNamespace;
+    /** @var string */
+    private $valueObjectPrefix;
+    /** @var string */
+    private $valueObjectSuffix;
 
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
         string $eventPayloadNamespace,
         string $eventPayloadPrefix,
         string $eventPayloadSuffix,
-        string $valueObjectNamespace
+        string $valueObjectNamespace,
+        string $valueObjectPrefix,
+        string $valueObjectSuffix
     ) {
         $this->schemaGateway = $schemaGateway;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
         $this->eventPayloadPrefix = $eventPayloadPrefix;
         $this->eventPayloadSuffix = $eventPayloadSuffix;
         $this->valueObjectNamespace = $valueObjectNamespace;
+        $this->valueObjectPrefix = $valueObjectPrefix;
+        $this->valueObjectSuffix = $valueObjectSuffix;
     }
 
     public function process(FieldDefinition $eventPayload, string $aggregateName)
@@ -48,7 +56,13 @@ class GraphQlEventPayloadGenerator
                 $property->getType(),
                 AggregateUuid::class,
                 $this->valueObjectNamespace
-            );
+            )
+                ->withNameSurroundedWhenInNamespace(
+                    $this->valueObjectPrefix,
+                    $this->valueObjectSuffix,
+                    $this->valueObjectNamespace
+                )
+            ;
             if (!$type->isScalar()) {
                 $classifier->useClass($type->getFullName());
             }

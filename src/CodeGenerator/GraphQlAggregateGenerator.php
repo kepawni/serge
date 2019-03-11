@@ -33,6 +33,10 @@ class GraphQlAggregateGenerator
     private $schemaGateway;
     /** @var string */
     private $valueObjectNamespace;
+    /** @var string */
+    private $valueObjectPrefix;
+    /** @var string */
+    private $valueObjectSuffix;
 
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
@@ -42,7 +46,9 @@ class GraphQlAggregateGenerator
         string $eventPayloadNamespace,
         string $eventPayloadPrefix,
         string $eventPayloadSuffix,
-        string $valueObjectNamespace
+        string $valueObjectNamespace,
+        string $valueObjectPrefix,
+        string $valueObjectSuffix
     ) {
         $this->aggregateNamespace = $aggregateNamespace;
         $this->aggregatePrefix = $aggregatePrefix;
@@ -52,6 +58,8 @@ class GraphQlAggregateGenerator
         $this->eventPayloadSuffix = $eventPayloadSuffix;
         $this->schemaGateway = $schemaGateway;
         $this->valueObjectNamespace = $valueObjectNamespace;
+        $this->valueObjectPrefix = $valueObjectPrefix;
+        $this->valueObjectSuffix = $valueObjectSuffix;
     }
 
     public function process(ObjectType $aggregate): Classifier
@@ -124,7 +132,13 @@ class GraphQlAggregateGenerator
                 $argument->getType(),
                 EntityIdentifier::class,
                 $this->valueObjectNamespace
-            );
+            )
+                ->withNameSurroundedWhenInNamespace(
+                    $this->valueObjectPrefix,
+                    $this->valueObjectSuffix,
+                    $this->valueObjectNamespace
+                )
+        ;
         $method
             ->appendParameter(new Parameter($argument->name, $type))
             ->addContentString(

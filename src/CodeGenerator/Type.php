@@ -132,4 +132,16 @@ class Type
             )
             : '';
     }
+
+    public function withNameSurroundedWhenInNamespace(string $prefix, string $suffix, string $namespace): self
+    {
+        return $this->namespace === $namespace
+            ? new self(
+                $prefix . $this->shortName . $suffix,
+                $this->namespace,
+                $this->isNullable,
+                $this->isCollection
+            )
+            : $this;
+    }
 }

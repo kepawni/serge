@@ -5,8 +5,8 @@ use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
-use Kepawni\Twilted\Basic\SimpleCommandHandler;
 use Kepawni\Twilted\Basic\AggregateUuid;
+use Kepawni\Twilted\Basic\SimpleCommandHandler;
 
 class GraphQlCommandHandlerGenerator
 {
@@ -24,6 +24,10 @@ class GraphQlCommandHandlerGenerator
     private $schemaGateway;
     /** @var string */
     private $valueObjectNamespace;
+    /** @var string */
+    private $valueObjectPrefix;
+    /** @var string */
+    private $valueObjectSuffix;
 
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
@@ -32,15 +36,19 @@ class GraphQlCommandHandlerGenerator
         string $handlerSuffix,
         string $aggregateNamespace,
         string $eventPayloadNamespace,
-        string $valueObjectNamespace
+        string $valueObjectNamespace,
+        string $valueObjectPrefix,
+        string $valueObjectSuffix
     ) {
         $this->schemaGateway = $schemaGateway;
         $this->aggregateNamespace = $aggregateNamespace;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
-        $this->valueObjectNamespace = $valueObjectNamespace;
         $this->handlerPrefix = $handlerPrefix;
         $this->handlerSuffix = $handlerSuffix;
         $this->handlerNamespace = $handlerNamespace;
+        $this->valueObjectNamespace = $valueObjectNamespace;
+        $this->valueObjectPrefix = $valueObjectPrefix;
+        $this->valueObjectSuffix = $valueObjectSuffix;
     }
 
     public function process(ObjectType $aggregate): Classifier
@@ -108,7 +116,13 @@ class GraphQlCommandHandlerGenerator
                 $argument->getType(),
                 AggregateUuid::class,
                 $this->valueObjectNamespace
-            );
+            )
+                ->withNameSurroundedWhenInNamespace(
+                    $this->valueObjectPrefix,
+                    $this->valueObjectSuffix,
+                    $this->valueObjectNamespace
+                )
+            ;
             $invocation->addContentString(
                 $type->toConversion(
                     sprintf('$methodArgs[\'%s\']', $argument->name),

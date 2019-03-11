@@ -12,16 +12,29 @@ class GraphQlValueObjectGenerator
     private $schemaGateway;
     /** @var string */
     private $valueObjectNamespace;
+    /** @var string */
+    private $valueObjectPrefix;
+    /** @var string */
+    private $valueObjectSuffix;
 
-    public function __construct(GraphQlSchemaGateway $schemaGateway, string $valueObjectNamespace)
-    {
+    public function __construct(
+        GraphQlSchemaGateway $schemaGateway,
+        string $valueObjectNamespace,
+        string $valueObjectPrefix,
+        string $valueObjectSuffix
+    ) {
         $this->schemaGateway = $schemaGateway;
         $this->valueObjectNamespace = $valueObjectNamespace;
+        $this->valueObjectPrefix = $valueObjectPrefix;
+        $this->valueObjectSuffix = $valueObjectSuffix;
     }
 
     public function process(InputObjectType $valueObject)
     {
-        $classifier = new Classifier($valueObject->name, $this->valueObjectNamespace);
+        $classifier = new Classifier(
+            $this->valueObjectPrefix . $valueObject->name . $this->valueObjectSuffix,
+            $this->valueObjectNamespace
+        );
         $params = [];
         $methods = [];
         $constructor = new Method('__construct');
@@ -33,7 +46,13 @@ class GraphQlValueObjectGenerator
                 $property->getType(),
                 AggregateUuid::class,
                 $this->valueObjectNamespace
-            );
+            )
+                ->withNameSurroundedWhenInNamespace(
+                    $this->valueObjectPrefix,
+                    $this->valueObjectSuffix,
+                    $this->valueObjectNamespace
+                )
+            ;
             if (!$type->isScalar()) {
                 $classifier->useClass($type->getFullName());
             }
@@ -44,12 +63,16 @@ class GraphQlValueObjectGenerator
                 ->appendParameter($type->isNullable() ? $parameter->specifyDefaultValue(null) : $parameter)
                 ->addContentString(sprintf('$this->init(\'%s\', $%1$s);', $property->name))
             ;
-            $fromHashMapParams->addContentString($type->toConversion(sprintf('$map[\'%s\']', $property->name), '%s::fromHashMap'));
+            $fromHashMapParams->addContentString(
+                $type->toConversion(sprintf('$map[\'%s\']', $property->name), '%s::fromHashMap')
+            );
             $unwindParams->addContentString($type->toConversion(sprintf('$spool[%d]', $i), '%s::unfold'));
             $windUpParams->addContentString(
                 sprintf(
                     '%s$this->%s%s',
-                    $type->isNullable() && !$type->isScalar() ? sprintf('is_null($this->%s) ? null : ', $property->name) : '',
+                    $type->isNullable() && !$type->isScalar()
+                        ? sprintf('is_null($this->%s) ? null : ', $property->name)
+                        : '',
                     $property->name,
                     $type->isScalar() ? '' : '->fold()'
                 )
@@ -65,7 +88,13 @@ class GraphQlValueObjectGenerator
                     ->addDocCommentLine('@return static')
                     ->makeStatic()
                     ->appendParameter(new Parameter('map', new Type('array', null, false)))
-                    ->makeReturn(new Type(Type::short(AbstractValueObjectBase::class), Type::namespace(AbstractValueObjectBase::class), false))
+                    ->makeReturn(
+                        new Type(
+                            Type::short(AbstractValueObjectBase::class),
+                            Type::namespace(AbstractValueObjectBase::class),
+                            false
+                        )
+                    )
                     ->addContentBlock($fromHashMapParams)
             )
             ->addMethod(
