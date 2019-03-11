@@ -13,6 +13,10 @@ class GraphQlCommandHandlerGenerator
     /** @var string */
     private $aggregateNamespace;
     /** @var string */
+    private $aggregatePrefix;
+    /** @var string */
+    private $aggregateSuffix;
+    /** @var string */
     private $eventPayloadNamespace;
     /** @var string */
     private $handlerNamespace;
@@ -35,6 +39,8 @@ class GraphQlCommandHandlerGenerator
         string $handlerPrefix,
         string $handlerSuffix,
         string $aggregateNamespace,
+        string $aggregatePrefix,
+        string $aggregateSuffix,
         string $eventPayloadNamespace,
         string $valueObjectNamespace,
         string $valueObjectPrefix,
@@ -42,6 +48,8 @@ class GraphQlCommandHandlerGenerator
     ) {
         $this->schemaGateway = $schemaGateway;
         $this->aggregateNamespace = $aggregateNamespace;
+        $this->aggregatePrefix = $aggregatePrefix;
+        $this->aggregateSuffix = $aggregateSuffix;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
         $this->handlerPrefix = $handlerPrefix;
         $this->handlerSuffix = $handlerSuffix;
@@ -79,19 +87,32 @@ class GraphQlCommandHandlerGenerator
                 )
             )
             ->makeReturn(new Type('void'))
-            ->useClass($this->aggregateNamespace . '\\' . $aggregate->name)
+            ->useClass(
+                $this->aggregateNamespace . '\\' . $this->aggregatePrefix . $aggregate->name . $this->aggregateSuffix
+            )
         ;
         $invocation = null;
         if ($this->schemaGateway->unwrapGraphQlType($action->getType()) === $aggregate) {
             $invocation = new IndentedMultilineBlock(
-                sprintf('$new%s = %1$s::%s(', $aggregate->name, $action->name),
+                sprintf(
+                    '$new%s = %s::%s(',
+                    $aggregate->name,
+                    $this->aggregatePrefix . $aggregate->name . $this->aggregateSuffix,
+                    $action->name
+                ),
                 ');',
                 ','
             );
             $method
-                ->addContentString(sprintf('/** @var %s $new%1$s */', $aggregate->name))
+                ->addContentString(
+                    sprintf(
+                        '/** @var %s $new%s */',
+                        $this->aggregatePrefix . $aggregate->name . $this->aggregateSuffix,
+                        $aggregate->name
+                    )
+                )
                 ->addContentBlock($invocation)
-                ->addContentString(sprintf('$this->saveToRepository($new%1$s);', $aggregate->name))
+                ->addContentString(sprintf('$this->saveToRepository($new%s);', $aggregate->name))
             ;
             $invocation->addContentString('AggregateUuid::unfold($aggregateId)');
         } else {
@@ -99,7 +120,13 @@ class GraphQlCommandHandlerGenerator
                 sprintf('$the%s->%s(', $aggregate->name, $action->name), ');', ','
             );
             $method
-                ->addContentString(sprintf('/** @var %s $the%1$s */', $aggregate->name))
+                ->addContentString(
+                    sprintf(
+                        '/** @var %s $the%s */',
+                        $this->aggregatePrefix . $aggregate->name . $this->aggregateSuffix,
+                        $aggregate->name
+                    )
+                )
                 ->addContentString(
                     sprintf(
                         '$the%s = $this->loadFromRepository(AggregateUuid::unfold($aggregateId));',
@@ -107,7 +134,7 @@ class GraphQlCommandHandlerGenerator
                     )
                 )
                 ->addContentBlock($invocation)
-                ->addContentString(sprintf('$this->saveToRepository($the%1$s);', $aggregate->name))
+                ->addContentString(sprintf('$this->saveToRepository($the%s);', $aggregate->name))
             ;
         }
         /** @var FieldArgument $argument */
