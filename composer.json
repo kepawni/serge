@@ -4,7 +4,6 @@
   "license": "GNU GPLv3",
   "autoload": {
     "psr-4": {
-      "deswerve\\colin\\": "src-colin/",
       "Kepawni\\Serge\\": "src/"
     }
   },
@@ -14,8 +13,7 @@
     "phpspec/phpspec": "^5.1"
   },
   "require": {
-    "ext-json": "*",
-    "webonyx/graphql-php": "^0.13.0",
+    "ext-dom": "*",
     "kepawni/twilted": "^1.1"
   }
 }
