@@ -10,6 +10,10 @@ class GraphQlEventPayloadGenerator
 {
     /** @var string */
     private $eventPayloadNamespace;
+    /** @var string */
+    private $eventPayloadPrefix;
+    /** @var string */
+    private $eventPayloadSuffix;
     /** @var GraphQlSchemaGateway */
     private $schemaGateway;
     /** @var string */
@@ -18,16 +22,23 @@ class GraphQlEventPayloadGenerator
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
         string $eventPayloadNamespace,
+        string $eventPayloadPrefix,
+        string $eventPayloadSuffix,
         string $valueObjectNamespace
     ) {
         $this->schemaGateway = $schemaGateway;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
+        $this->eventPayloadPrefix = $eventPayloadPrefix;
+        $this->eventPayloadSuffix = $eventPayloadSuffix;
         $this->valueObjectNamespace = $valueObjectNamespace;
     }
 
     public function process(FieldDefinition $eventPayload, string $aggregateName)
     {
-        $classifier = new Classifier($eventPayload->name, $this->eventPayloadNamespace . '\\' . $aggregateName);
+        $classifier = new Classifier(
+            $this->eventPayloadPrefix . $eventPayload->name . $this->eventPayloadSuffix,
+            str_replace('#', $aggregateName, $this->eventPayloadNamespace)
+        );
         $params = [];
         $constructor = new Method('__construct');
         $unwindParams = new IndentedMultilineBlock('return new self(', ');', ',');

@@ -17,6 +17,10 @@ class GraphQlAggregateGenerator
     private $aggregateSuffix;
     /** @var string */
     private $eventPayloadNamespace;
+    /** @var string */
+    private $eventPayloadPrefix;
+    /** @var string */
+    private $eventPayloadSuffix;
     /** @var string[] */
     private $predicates = [
         'bool' => 'MatchesCurrentState',
@@ -36,12 +40,16 @@ class GraphQlAggregateGenerator
         string $aggregatePrefix,
         string $aggregateSuffix,
         string $eventPayloadNamespace,
+        string $eventPayloadPrefix,
+        string $eventPayloadSuffix,
         string $valueObjectNamespace
     ) {
         $this->aggregateNamespace = $aggregateNamespace;
         $this->aggregatePrefix = $aggregatePrefix;
         $this->aggregateSuffix = $aggregateSuffix;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
+        $this->eventPayloadPrefix = $eventPayloadPrefix;
+        $this->eventPayloadSuffix = $eventPayloadSuffix;
         $this->schemaGateway = $schemaGateway;
         $this->valueObjectNamespace = $valueObjectNamespace;
     }
@@ -149,7 +157,11 @@ class GraphQlAggregateGenerator
             ->appendParameter(
                 new Parameter(
                     'event',
-                    new Type($event->name, $this->eventPayloadNamespace . '\\' . $aggregateName, false)
+                    new Type(
+                        $this->eventPayloadPrefix . $event->name . $this->eventPayloadSuffix,
+                        str_replace('#', $aggregateName, $this->eventPayloadNamespace),
+                        false
+                    )
                 )
             )
             ;
