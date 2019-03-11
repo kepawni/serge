@@ -15,7 +15,16 @@
                     <complexType>
                         <sequence>
                             <element name="aggregate" type="ks:naming"/>
-                            <element name="event-payload" type="ks:naming"/>
+                            <element name="event-payload" type="ks:naming">
+                                <annotation>
+                                    <documentation>
+                                        Events can be grouped into aggregate-specific namespaces by using a hash sign
+                                        (#) as a placeholder for the aggregate name, e. g. specifying
+                                        sub-namespace="Cqrs\My#Events" would generate all event payload types for the
+                                        Customer aggregate in the sub-namespace Cqrs\MyCustomerEvents.
+                                    </documentation>
+                                </annotation>
+                            </element>
                             <element name="handler" type="ks:naming"/>
                             <element name="value-object" type="ks:naming"/>
                         </sequence>
