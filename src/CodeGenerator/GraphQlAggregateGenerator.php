@@ -12,6 +12,10 @@ class GraphQlAggregateGenerator
     /** @var string */
     private $aggregateNamespace;
     /** @var string */
+    private $aggregatePrefix;
+    /** @var string */
+    private $aggregateSuffix;
+    /** @var string */
     private $eventPayloadNamespace;
     /** @var string[] */
     private $predicates = [
@@ -29,18 +33,25 @@ class GraphQlAggregateGenerator
     public function __construct(
         GraphQlSchemaGateway $schemaGateway,
         string $aggregateNamespace,
+        string $aggregatePrefix,
+        string $aggregateSuffix,
         string $eventPayloadNamespace,
         string $valueObjectNamespace
     ) {
-        $this->schemaGateway = $schemaGateway;
         $this->aggregateNamespace = $aggregateNamespace;
+        $this->aggregatePrefix = $aggregatePrefix;
+        $this->aggregateSuffix = $aggregateSuffix;
         $this->eventPayloadNamespace = $eventPayloadNamespace;
+        $this->schemaGateway = $schemaGateway;
         $this->valueObjectNamespace = $valueObjectNamespace;
     }
 
     public function process(ObjectType $aggregate): Classifier
     {
-        $classifier = new Classifier($aggregate->name, $this->aggregateNamespace);
+        $classifier = new Classifier(
+            $this->aggregatePrefix . $aggregate->name . $this->aggregateSuffix,
+            $this->aggregateNamespace
+        );
         /** @var FieldDefinition $action */
         foreach ($this->schemaGateway->iterateAggregateMethods($aggregate) as $action) {
             $classifier->addMethod($this->actionToMethod($aggregate, $action));
