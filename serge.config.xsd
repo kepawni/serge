@@ -16,8 +16,8 @@
                         <sequence>
                             <element name="handler" type="ks:naming"/>
                             <element name="aggregate" type="ks:naming"/>
-                            <element name="valueObject" type="ks:naming"/>
-                            <element name="eventPayload" type="ks:naming"/>
+                            <element name="value-object" type="ks:naming"/>
+                            <element name="event-payload" type="ks:naming"/>
                         </sequence>
                         <attribute type="string" name="directory"/>
                         <attribute type="string" name="namespace"/>
