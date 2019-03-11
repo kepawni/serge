@@ -197,23 +197,18 @@ class GraphQlSchemaGateway
     private function guardMutationMethodFieldValid(FieldDefinition $methodField, string $aggregateName): void
     {
         if (!($methodField->getType() instanceof NonNull)
-            || $this->isTypeNeitherScalarNorObject($methodField->getType()->getWrappedType())
-            || !in_array($methodField->getType()->getWrappedType()->name, ['Boolean', $aggregateName])
+            || !($methodField->getType()->getWrappedType() instanceof ScalarType)
+            || !in_array($methodField->getType()->getWrappedType()->name, ['Boolean', 'ID'])
         ) {
             throw new UnexpectedValueException(
                 sprintf(
                     'The return type of the %s\'s “%s” method should be '
-                    . '“Boolean!” for a mutation or “%1$s!” for a factory',
+                    . '“Boolean!” for a mutation or “ID!” for a factory',
                     $aggregateName,
                     $methodField->name
                 )
             );
         }
-    }
-
-    private function isTypeNeitherScalarNorObject($type): bool
-    {
-        return !($type instanceof ScalarType || $type instanceof ObjectType);
     }
 
     private function traverseGraphQlType(GraphQlType $type, Type $result, string $defaultNamespace): Type

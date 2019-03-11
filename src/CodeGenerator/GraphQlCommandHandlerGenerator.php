@@ -3,6 +3,7 @@ namespace Kepawni\Serge\CodeGenerator;
 
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\IDType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Kepawni\Twilted\Basic\AggregateUuid;
@@ -92,7 +93,7 @@ class GraphQlCommandHandlerGenerator
             )
         ;
         $invocation = null;
-        if ($this->schemaGateway->unwrapGraphQlType($action->getType()) === $aggregate) {
+        if ($this->schemaGateway->unwrapGraphQlType($action->getType())->name === IDType::ID) {
             $invocation = new IndentedMultilineBlock(
                 sprintf(
                     '$new%s = %s::%s(',

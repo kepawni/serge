@@ -3,6 +3,7 @@ namespace Kepawni\Serge\CodeGenerator;
 
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\IDType;
 use GraphQL\Type\Definition\ObjectType;
 use Kepawni\Twilted\Basic\SimpleAggregateRoot;
 use Kepawni\Twilted\EntityIdentifier;
@@ -83,7 +84,7 @@ class GraphQlAggregateGenerator
     private function actionToMethod(ObjectType $aggregate, FieldDefinition $action): Method
     {
         $method = (new Method($action->name))
-            ->makeStatic($this->schemaGateway->unwrapGraphQlType($action->getType()) === $aggregate);
+            ->makeStatic($this->schemaGateway->unwrapGraphQlType($action->getType())->name === IDType::ID);
         $eventInvocation = new CodeBlock(
             sprintf('// new %s(', $this->eventNameForAggregateMethod($aggregate->name, $action->name)),
             ')',
