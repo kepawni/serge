@@ -24,12 +24,14 @@ if (!$xpath->registerNamespace('s', 'https://github.com/kepawni/serge')) {
 }
 $namespaceRootDirectory = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@directory)');
 $rootNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@namespace)');
-$handlerNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@sub-namespace)');
-$aggregateNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@sub-namespace)');
-$valueObjectNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@sub-namespace)');
-$eventPayloadNamespace = $xpath->evaluate(
-    'string(/s:serge-code-generator/s:destination/s:event-payload/@sub-namespace)'
-);
+$handlerNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@sub-namespace)');
+$aggregateNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@sub-namespace)');
+$valueObjectNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@sub-namespace)');
+$eventPayloadNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@sub-namespace)');
 $aggregatePrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@prefix)');
 $aggregateSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@suffix)');
 $handlerPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@prefix)');

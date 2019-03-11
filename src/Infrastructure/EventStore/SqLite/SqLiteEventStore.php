@@ -28,15 +28,15 @@ class SqLiteEventStore implements EventStore
     private $database;
     private $dbStatement;
     private $dbWriteStatement;
-    private $eventNamespace;
+    private $omitEventNamespacePrefix;
 
-    public function __construct(SqLitePdo $database, string $eventNamespace)
+    public function __construct(SqLitePdo $database, string $omitEventNamespacePrefix = '')
     {
         $this->connection = $database;
         $this->dbStatement = $this->createDbStatement($this->connection);
         $this->dbWriteStatement = $this->createDbWriteStatement($this->connection);
         $this->database = $database;
-        $this->eventNamespace = $eventNamespace;
+        $this->omitEventNamespacePrefix = $omitEventNamespacePrefix;
     }
 
     public function append(EventStream $recordedEvents): void
@@ -102,7 +102,7 @@ SQL;
     private function restoreEventFromRecord(stdClass $record): RecordedEvent
     {
         /** @var EventPayload $eventType */
-        $eventType = ltrim(rtrim($this->eventNamespace, '\\') . '\\', '\\') . $record->event_type;
+        $eventType = $this->omitEventNamespacePrefix . $record->event_type;
         $idString = $record->aggregate_id_string;
         $dateString = $record->date_string;
         $serializedEventData = json_decode($record->serialized_event_data);
@@ -113,22 +113,23 @@ SQL;
         );
     }
 
-    private function shortClassName($object)
-    {
-        return array_reverse(explode('\\', get_class($object)))[0];
-    }
-
     private function writeEvent(DomainEvent $recordedEvent): void
     {
-        $eventType = $this->shortClassName($recordedEvent->getPayload());
+        $eventType = preg_replace(
+            sprintf('/^%s/', str_replace('\\', '\\\\', $this->omitEventNamespacePrefix)),
+            '',
+            $recordedEvent->getPayload()
+        );
         $aggregateIdString = $recordedEvent->getId()->fold();
         $dateString = $recordedEvent->getRecordedOn()->format(DATE_ATOM);
         $serializedEventData = $recordedEvent->getPayload()->windUp();
-        $this->dbWriteStatement->execute([
-            ':eventType' => $eventType,
-            ':aggregateIdString' => $aggregateIdString,
-            ':dateString' => $dateString,
-            ':serializedEventData' => json_encode($serializedEventData, self::JSON_FLAGS),
-        ]);
+        $this->dbWriteStatement->execute(
+            [
+                ':eventType' => $eventType,
+                ':aggregateIdString' => $aggregateIdString,
+                ':dateString' => $dateString,
+                ':serializedEventData' => json_encode($serializedEventData, self::JSON_FLAGS),
+            ]
+        );
     }
 }
