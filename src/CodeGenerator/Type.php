@@ -89,7 +89,7 @@ class Type
     {
         return sprintf(
             $this->shortName && !$this->isCollection ? '%s%s(%s)' : '%s%3$s',
-            $this->isNullable ? sprintf('is_null(%s) ? null : ', $valueExpression) : '',
+            $this->isNullable ? sprintf('is_null(%s ?? null) ? null : ', $valueExpression) : '',
             $this->isScalar
                 ? str_replace('string', 'str', $this->shortName) . 'val'
                 : sprintf($classConversionSprintfTemplate, $this->shortName),
