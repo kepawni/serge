@@ -17,12 +17,12 @@ class CqrsCommandBus extends TypeResolver
         );
     }
 
-    public function append(SimpleCommandHandler $handler)
+    public function append(string $aggregateName, SimpleCommandHandler $handler)
     {
         foreach (get_class_methods($handler) as $method) {
-            $handlerClassShort = strval(array_reverse(explode('\\', get_class($handler)))[0]);
+            $aggregateShortName = strval(array_reverse(explode('\\', $aggregateName))[0]);
             $this->addResolverForField(
-                $handlerClassShort,
+                $aggregateShortName,
                 $method,
                 function ($aggregateId, array $methodArgs, $context, ResolveInfo $info) use ($handler, $method) {
                     $handler->$method($aggregateId, $methodArgs, $context, $info);
