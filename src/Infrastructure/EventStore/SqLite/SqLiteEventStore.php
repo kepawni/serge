@@ -118,7 +118,7 @@ SQL;
         $eventType = preg_replace(
             sprintf('/^%s/', str_replace('\\', '\\\\', $this->omitEventNamespacePrefix)),
             '',
-            $recordedEvent->getPayload()
+            get_class($recordedEvent->getPayload())
         );
         $aggregateIdString = $recordedEvent->getId()->fold();
         $dateString = $recordedEvent->getRecordedOn()->format(DATE_ATOM);
