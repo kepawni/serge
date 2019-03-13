@@ -32,9 +32,21 @@
                         <attribute type="string" name="namespace"/>
                     </complexType>
                 </element>
+                <element name="command-endpoint">
+                    <complexType>
+                        <sequence>
+                            <element name="bus-setup" type="ks:file"/>
+                            <element name="schema-cache" type="ks:file"/>
+                            <element name="script" type="ks:file"/>
+                        </sequence>
+                    </complexType>
+                </element>
             </sequence>
         </complexType>
     </element>
+    <complexType name="file">
+        <attribute type="string" name="filename"/>
+    </complexType>
     <complexType name="naming">
         <attribute type="string" name="sub-namespace"/>
         <attribute type="string" name="prefix"/>
