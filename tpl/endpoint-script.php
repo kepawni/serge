@@ -48,7 +48,7 @@ try {
             $standardServer->executeRequest(
                 OperationParams::create(
                     ['query' => $query, 'variables' => $variables],
-                    substr(ltrim($query), 0, 8) === 'mutation'
+                    substr(ltrim($query), 0, 8) !== 'mutation'
                 )
             ),
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
