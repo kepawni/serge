@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serge-code-generator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns="https://github.com/kepawni/serge"
+                      xsi:schemaLocation="https://github.com/kepawni/serge vendor/kepawni/serge/serge.config.xsd">
+    <source graphql-schema="command.graphqls"/>
+    <destination directory="src" namespace="Sample\Project">
+        <aggregate sub-namespace="CommandApi\Aggregate"/>
+        <event-payload sub-namespace="CommandApi\Event\#"/>
+        <handler sub-namespace="CommandApi\Handler" suffix="Handler"/>
+        <value-object sub-namespace="CommandApi\Value"/>
+    </destination>
+    <command-endpoint>
+        <bus-setup filename="lib/command-bus.inc.php"/>
+        <schema-cache filename="lib/command.graphqls/cache.inc.php"/>
+        <script filename="index.php"/>
+    </command-endpoint>
+</serge-code-generator>

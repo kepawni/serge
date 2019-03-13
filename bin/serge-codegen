@@ -13,7 +13,12 @@ $configFile = $autoloaderDir . '/../serge.config.xml';
 $xsdFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
 $endpointTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/endpoint-script.php';
 $busSetupTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/command-bus-setup.php';
+$sampleConfigFile = $autoloaderDir . '/kepawni/serge/tpl/serge.config.xml';
 require_once $autoloaderDir . '/autoload.php';
+if (!is_file($configFile)) {
+    copy($sampleConfigFile, $configFile);
+    throw new RuntimeException('Missing config file, created one from default template');
+}
 $config = new DOMDocument();
 if (!$config->load($configFile)) {
     throw new RuntimeException('Failed to load config file');
