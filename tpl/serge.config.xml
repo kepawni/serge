@@ -11,7 +11,7 @@
     </destination>
     <command-endpoint>
         <bus-setup filename="lib/command-bus.inc.php"/>
-        <schema-cache filename="lib/command.graphqls/cache.inc.php"/>
+        <schema-cache filename="lib/graphqls-cache/"/>
         <script filename="index.php"/>
     </command-endpoint>
 </serge-code-generator>

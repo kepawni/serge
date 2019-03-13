@@ -71,7 +71,7 @@ $busSetupUseStatements = [
 ];
 $busSetupRepositories = [];
 $busSetupHandlers = [];
-foreach (array_map('dirname', [$busSetupInclude, $endpointScript, $schemaCache]) as $dir) {
+foreach (array_map('dirname', [$busSetupInclude, $endpointScript, $schemaCache . '/dummy.inc.php']) as $dir) {
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
