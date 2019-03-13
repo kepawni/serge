@@ -14,6 +14,7 @@ $xsdFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
 $endpointTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/endpoint-script.php';
 $busSetupTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/command-bus-setup.php';
 $sampleConfigFile = $autoloaderDir . '/kepawni/serge/tpl/serge.config.xml';
+$sampleSchemaFile = $autoloaderDir . '/kepawni/serge/tpl/schema.graphqls';
 require_once $autoloaderDir . '/autoload.php';
 if (!is_file($configFile)) {
     copy($sampleConfigFile, $configFile);
@@ -52,6 +53,10 @@ $eventPayloadSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destina
 $busSetupInclude = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:bus-setup/@filename)');
 $endpointScript = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:script/@filename)');
 $schemaCache = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:schema-cache/@filename)');
+if (!is_file($graphQlSchema)) {
+    copy($sampleSchemaFile, $graphQlSchema);
+    throw new RuntimeException('Missing GraphQL schema file, created one from default template');
+}
 $busSetupUseStatements = [
     'use Kepawni\Serge\Infrastructure\GraphQL\CqrsCommandBus;',
     'use Kepawni\Twilted\Basic\SimpleDomainEvent;',

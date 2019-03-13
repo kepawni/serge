@@ -1,0 +1,65 @@
+# better leave this as is for now, unless you know what you're doing
+schema {
+    query: CqrsQuery
+    mutation: CqrsAggregateMutators
+}
+type CqrsQuery {
+    status: Boolean!
+}
+
+type CqrsAggregateMutators {
+    # add a field for each of your aggregate roots named after the aggregate and returning a non-null aggregate type
+    Customer(id: ID!): Customer!
+    Invoice(id: ID!): Invoice!
+}
+
+# add a type for each of your aggregates and fill it with the commands to be handled
+# factory commands (that create a new aggregate) must return ID!
+# other commands (those who mutate an existing one) must return Boolean!
+type Customer {
+    engageInBusiness(name: String! billingAddress: Address!): ID!
+    relocate(billingAddress: Address!): Boolean!
+}
+type Invoice {
+    chargeCustomer(customerId: ID!, invoiceNumber: String, invoiceDate: Date): ID!
+    appendLineItem(item: LineItem!): Boolean!
+    correctMistypedInvoiceDate(invoiceDate: Date!): Boolean!
+    overrideDueDate(dueDate: Date!): Boolean!
+    removeLineItemByPosition(position: Int!): Boolean!
+}
+
+# for every of your aggregate define an interface grouping its events
+# add a field for each event, which must return a Boolean!
+interface CustomerEvents {
+    InBusinessWasEngaged(name: String! billingAddress: Address!): Boolean!
+    CustomerWasRelocated(billingAddress: Address!): Boolean!
+}
+interface InvoiceEvents {
+    CustomerWasCharged(customerId: ID!, invoiceNumber: String, invoiceDate: Date): Boolean!
+    LineItemWasAppended(item: LineItem!): Boolean!
+    MistypedInvoiceDateWasCorrected(invoiceDate: Date!): Boolean!
+    DueDateWasOverridden(dueDate: Date!): Boolean!
+    LineItemWasRemoved(position: Int!): Boolean!
+}
+
+# finally, define input types for all the value objects used
+input Address {
+    city: String!
+    postalCode: String!
+    countryCode: String!
+    addressLine1: String
+    addressLine2: String
+    addressLine3: String
+}
+input Date {
+    iso8601value: String!
+}
+input LineItem {
+    quantity: Float!
+    price: Money!
+    title: String
+}
+input Money {
+    amount: Float!
+    currency: String!
+}
