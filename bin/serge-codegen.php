@@ -9,7 +9,8 @@ use Kepawni\Serge\CodeGenerator\GraphQlValueObjectGenerator;
 
 $autoloaderDir = locateAutoloaderDir($argv ?? []);
 $configFile = $autoloaderDir . '/../serge.config.xml';
-$schemaFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
+$xsdFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
+$endpointTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/endpoint-script.php';
 require_once $autoloaderDir . '/autoload.php';
 $config = new DOMDocument();
 if (!$config->load($configFile)) {
@@ -22,6 +23,7 @@ $xpath = new DOMXPath($config);
 if (!$xpath->registerNamespace('s', 'https://github.com/kepawni/serge')) {
     throw new RuntimeException('Failed to register namespace of config file');
 }
+$graphQlSchema = $xpath->evaluate('string(/s:serge-code-generator/s:source/@graphql-schema)');
 $namespaceRootDirectory = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@directory)');
 $rootNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@namespace)');
 $handlerNamespace = $rootNamespace . '\\'
@@ -40,9 +42,23 @@ $valueObjectPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destinat
 $valueObjectSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@suffix)');
 $eventPayloadPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@prefix)');
 $eventPayloadSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@suffix)');
-$schema = BuildSchema::build(
-    file_get_contents($xpath->evaluate('string(/s:serge-code-generator/s:source/@graphql-schema)'))
+$busSetupInclude = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:bus-setup/@filename)');
+$endpointScript = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:script/@filename)');
+$schemaCache = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:schema-cache/@filename)');
+foreach (array_map('dirname', [$busSetupInclude, $endpointScript, $schemaCache]) as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+}
+file_put_contents(
+    $endpointScript,
+    str_replace(
+        ['694b59db-816c-40b2-9d81-bf06f6192b0f', 'c6b514bd-b9e0-4b43-a2fd-88b3d32d2a24', 'a266afe5-d493-4160-868c-112fc087a20es'],
+        [$busSetupInclude, $schemaCache, $graphQlSchema],
+        file_get_contents($endpointTemplateFile)
+    )
 );
+$schema = BuildSchema::build(file_get_contents($graphQlSchema));
 $schemaGateway = new GraphQlSchemaGateway($schema);
 $writer = new ClassWriter($namespaceRootDirectory, $rootNamespace);
 $aggregateGenerator = new GraphQlAggregateGenerator(
