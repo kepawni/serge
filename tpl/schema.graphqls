@@ -28,21 +28,7 @@ type Invoice {
     removeLineItemByPosition(position: Int!): Boolean!
 }
 
-# for every of your aggregate define an interface grouping its events
-# add a field for each event, which must return a Boolean!
-interface CustomerEvents {
-    InBusinessWasEngaged(name: String! billingAddress: Address!): Boolean!
-    CustomerWasRelocated(billingAddress: Address!): Boolean!
-}
-interface InvoiceEvents {
-    CustomerWasCharged(customerId: ID!, invoiceNumber: String, invoiceDate: Date): Boolean!
-    LineItemWasAppended(item: LineItem!): Boolean!
-    MistypedInvoiceDateWasCorrected(invoiceDate: Date!): Boolean!
-    DueDateWasOverridden(dueDate: Date!): Boolean!
-    LineItemWasRemoved(position: Int!): Boolean!
-}
-
-# finally, define input types for all the value objects used
+# define input types for all the value objects used by commands and events (following below)
 input Address {
     city: String!
     postalCode: String!
@@ -62,4 +48,18 @@ input LineItem {
 input Money {
     amount: Float!
     currency: String!
+}
+
+# finally, for every of your aggregates define an interface grouping its events
+# add a field for each event, which must return a Boolean!
+interface CustomerEvents {
+    InBusinessWasEngaged(name: String! billingAddress: Address!): Boolean!
+    CustomerWasRelocated(billingAddress: Address!): Boolean!
+}
+interface InvoiceEvents {
+    CustomerWasCharged(customerId: ID!, invoiceNumber: String, invoiceDate: Date): Boolean!
+    LineItemWasAppended(item: LineItem!): Boolean!
+    MistypedInvoiceDateWasCorrected(invoiceDate: Date!): Boolean!
+    DueDateWasOverridden(dueDate: Date!): Boolean!
+    LineItemWasRemoved(position: Int!): Boolean!
 }
