@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php declare(strict_types=1);
 use GraphQL\Utils\BuildSchema;
 use Kepawni\Serge\CodeGenerator\ClassWriter;
@@ -16,7 +17,7 @@ $config = new DOMDocument();
 if (!$config->load($configFile)) {
     throw new RuntimeException('Failed to load config file');
 }
-if (!$config->schemaValidate($schemaFile)) {
+if (!$config->schemaValidate($xsdFile)) {
     throw new RuntimeException('Failed to validate config file against XSD schema');
 };
 $xpath = new DOMXPath($config);
