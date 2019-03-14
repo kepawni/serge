@@ -1,0 +1,210 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+use GraphQL\Utils\BuildSchema;
+use Kepawni\Serge\CodeGenerator\ClassWriter;
+use Kepawni\Serge\CodeGenerator\GraphQlAggregateGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlCommandHandlerGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlEventPayloadGenerator;
+use Kepawni\Serge\CodeGenerator\GraphQlSchemaGateway;
+use Kepawni\Serge\CodeGenerator\GraphQlValueObjectGenerator;
+
+$autoloaderDir = locateAutoloaderDir($argv ?? []);
+$configFile = $autoloaderDir . '/../serge.config.xml';
+$xsdFile = $autoloaderDir . '/kepawni/serge/serge.config.xsd';
+$endpointTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/endpoint-script.php';
+$busSetupTemplateFile = $autoloaderDir . '/kepawni/serge/tpl/command-bus-setup.php';
+$sampleConfigFile = $autoloaderDir . '/kepawni/serge/tpl/serge.config.xml';
+$sampleSchemaFile = $autoloaderDir . '/kepawni/serge/tpl/schema.graphqls';
+require_once $autoloaderDir . '/autoload.php';
+if (!is_file($configFile)) {
+    copy($sampleConfigFile, $configFile);
+    throw new RuntimeException('Missing config file, created one from default template');
+}
+$config = new DOMDocument();
+if (!$config->load($configFile)) {
+    throw new RuntimeException('Failed to load config file');
+}
+if (!$config->schemaValidate($xsdFile)) {
+    throw new RuntimeException('Failed to validate config file against XSD schema');
+};
+$xpath = new DOMXPath($config);
+if (!$xpath->registerNamespace('s', 'https://github.com/kepawni/serge')) {
+    throw new RuntimeException('Failed to register namespace of config file');
+}
+$graphQlSchema = $xpath->evaluate('string(/s:serge-code-generator/s:source/@graphql-schema)');
+$namespaceRootDirectory = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@directory)');
+$rootNamespace = $xpath->evaluate('string(/s:serge-code-generator/s:destination/@namespace)');
+$handlerNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@sub-namespace)');
+$aggregateNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@sub-namespace)');
+$valueObjectNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@sub-namespace)');
+$eventPayloadNamespace = $rootNamespace . '\\'
+    . $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@sub-namespace)');
+$aggregatePrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@prefix)');
+$aggregateSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:aggregate/@suffix)');
+$handlerPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@prefix)');
+$handlerSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:handler/@suffix)');
+$valueObjectPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@prefix)');
+$valueObjectSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:value-object/@suffix)');
+$eventPayloadPrefix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@prefix)');
+$eventPayloadSuffix = $xpath->evaluate('string(/s:serge-code-generator/s:destination/s:event-payload/@suffix)');
+$busSetupInclude = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:bus-setup/@filename)');
+$endpointScript = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:script/@filename)');
+$schemaCache = $xpath->evaluate('string(/s:serge-code-generator/s:command-endpoint/s:schema-cache/@filename)');
+if (!is_file($graphQlSchema)) {
+    copy($sampleSchemaFile, $graphQlSchema);
+    throw new RuntimeException('Missing GraphQL schema file, created one from default template');
+}
+$busSetupUseStatements = [
+    'use Kepawni\Serge\Infrastructure\GraphQL\CqrsCommandBus;',
+    'use Kepawni\Twilted\Basic\SimpleDomainEvent;',
+    'use Kepawni\Twilted\Basic\SimpleEventStream;',
+    'use Kepawni\Twilted\Basic\SimpleRepository;',
+    'use Kepawni\Twilted\DomainEvent;',
+    'use Kepawni\Twilted\EntityIdentifier;',
+    'use Kepawni\Twilted\EventBus;',
+    'use Kepawni\Twilted\EventPayload;',
+    'use Kepawni\Twilted\EventStore;',
+    'use Kepawni\Twilted\EventStream;',
+];
+$busSetupRepositories = [];
+$busSetupHandlers = [];
+foreach (array_map('dirname', [$busSetupInclude, $endpointScript, $schemaCache . '/dummy.inc.php']) as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+}
+file_put_contents(
+    $endpointScript,
+    str_replace(
+        ['694b59db-816c-40b2-9d81-bf06f6192b0f', 'c6b514bd-b9e0-4b43-a2fd-88b3d32d2a24', 'a266afe5-d493-4160-868c-112fc087a20es'],
+        [$busSetupInclude, $schemaCache, $graphQlSchema],
+        file_get_contents($endpointTemplateFile)
+    )
+);
+$schema = BuildSchema::build(file_get_contents($graphQlSchema));
+$schemaGateway = new GraphQlSchemaGateway($schema);
+$writer = new ClassWriter($namespaceRootDirectory, $rootNamespace);
+$aggregateGenerator = new GraphQlAggregateGenerator(
+    $schemaGateway,
+    $aggregateNamespace, $aggregatePrefix, $aggregateSuffix,
+    $eventPayloadNamespace, $eventPayloadPrefix, $eventPayloadSuffix,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$commandHandlerGenerator = new GraphQlCommandHandlerGenerator(
+    $schemaGateway,
+    $handlerNamespace, $handlerPrefix, $handlerSuffix,
+    $aggregateNamespace, $aggregatePrefix, $aggregateSuffix,
+    $eventPayloadNamespace,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$eventPayloadGenerator = new GraphQlEventPayloadGenerator(
+    $schemaGateway,
+    $eventPayloadNamespace, $eventPayloadPrefix, $eventPayloadSuffix,
+    $valueObjectNamespace, $valueObjectPrefix, $valueObjectSuffix
+);
+$valueObjectGenerator = new GraphQlValueObjectGenerator(
+    $schemaGateway,
+    $valueObjectNamespace,
+    $valueObjectPrefix,
+    $valueObjectSuffix
+);
+foreach ($schemaGateway->iterateAggregates() as $aggregate) {
+    $writer->saveToFile(
+        $aggregatePrefix . $aggregate->name . $aggregateSuffix,
+        $aggregateNamespace,
+        $aggregateGenerator->process($aggregate)
+    );
+    $writer->saveToFile(
+        $handlerPrefix . $aggregate->name . $handlerSuffix,
+        $handlerNamespace,
+        $commandHandlerGenerator->process($aggregate)
+    );
+    $busSetupUseStatements[] = sprintf(
+        'use %s%s%s%s;',
+        ltrim($aggregateNamespace . '\\', '\\'),
+        $aggregatePrefix,
+        $aggregate->name,
+        $aggregateSuffix
+    );
+    $busSetupUseStatements[] = sprintf(
+        'use %s%s%s%s;',
+        ltrim($handlerNamespace . '\\', '\\'),
+        $handlerPrefix,
+        $aggregate->name,
+        $handlerSuffix
+    );
+    $busSetupRepositories[] = sprintf(
+        '$%sRepository = new SimpleRepository(%s%s%s::class, $eventBus, $eventStore);',
+        lcfirst($aggregate->name),
+        $aggregatePrefix,
+        $aggregate->name,
+        $aggregateSuffix
+    );
+    $busSetupHandlers[] = sprintf(
+        '$commandBus->append(%s%s%s::class, new %s%s%s($%sRepository));',
+        $aggregatePrefix,
+        $aggregate->name,
+        $aggregateSuffix,
+        $handlerPrefix,
+        $aggregate->name,
+        $handlerSuffix,
+        lcfirst($aggregate->name)
+    );
+    foreach ($schemaGateway->iterateAggregateEvents($aggregate) as $event) {
+        $writer->saveToFile(
+            $eventPayloadPrefix . $event->name . $eventPayloadSuffix,
+            str_replace('#', $aggregate->name, $eventPayloadNamespace),
+            $eventPayloadGenerator->process($event, $aggregate->name)
+        );
+    }
+}
+foreach ($schemaGateway->iterateValueObjects() as $valueObject) {
+    $writer->saveToFile(
+        $valueObjectPrefix . $valueObject->name . $valueObjectSuffix,
+        $valueObjectNamespace,
+        $valueObjectGenerator->process($valueObject)
+    );
+}
+sort($busSetupUseStatements);
+file_put_contents(
+    $busSetupInclude,
+    str_replace(
+        [
+            '//62e4ff8f-5d04-4a70-a3f7-fadcc0605c27',
+            '//e8742818-5e5f-41c8-acbe-4cfed1d2b07e',
+            '//f9ec0699-6d69-4937-9642-ba1b67416808',
+        ],
+        [
+            implode("\n", $busSetupUseStatements),
+            implode("\n    ", $busSetupRepositories),
+            implode("\n    ", $busSetupHandlers),
+        ],
+        file_get_contents($busSetupTemplateFile)
+    )
+);
+//
+function locateAutoloaderDir(array $argv): string
+{
+    if (PHP_SAPI !== 'cli') {
+        throw new RuntimeException('This is a command line executable');
+    }
+    if (!isset($argv[0])) {
+        throw new RuntimeException('Could not locate executable script');
+    }
+    $realpath = realpath(dirname($argv[0]));
+    $lastTwo = implode('/', array_slice(explode(DIRECTORY_SEPARATOR, $realpath), -2));
+    if ($lastTwo === 'vendor/bin') {
+        return $realpath . '/..';
+    }
+    $path = explode(DIRECTORY_SEPARATOR, realpath(__DIR__));
+    foreach (array_keys($path) as $i) {
+        $filename = implode('/', array_slice($path, 0, -$i)) . '/vendor';
+        if (is_file($filename)) {
+            return $filename;
+        }
+    }
+    return __DIR__ . '/../vendor';
+}

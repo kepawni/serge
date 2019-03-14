@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:ks="https://github.com/kepawni/serge"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified"
+        targetNamespace="https://github.com/kepawni/serge">
+    <element name="serge-code-generator">
+        <complexType>
+            <sequence>
+                <element name="source">
+                    <complexType>
+                        <attribute type="string" name="graphql-schema"/>
+                    </complexType>
+                </element>
+                <element name="destination">
+                    <complexType>
+                        <sequence>
+                            <element name="aggregate" type="ks:naming"/>
+                            <element name="event-payload" type="ks:naming">
+                                <annotation>
+                                    <documentation>
+                                        Events can be grouped into aggregate-specific namespaces by using a hash sign
+                                        (#) as a placeholder for the aggregate name, e. g. specifying
+                                        sub-namespace="Cqrs\My#Events" would generate all event payload types for the
+                                        Customer aggregate in the sub-namespace Cqrs\MyCustomerEvents.
+                                    </documentation>
+                                </annotation>
+                            </element>
+                            <element name="handler" type="ks:naming"/>
+                            <element name="value-object" type="ks:naming"/>
+                        </sequence>
+                        <attribute type="string" name="directory"/>
+                        <attribute type="string" name="namespace"/>
+                    </complexType>
+                </element>
+                <element name="command-endpoint">
+                    <complexType>
+                        <sequence>
+                            <element name="bus-setup" type="ks:file"/>
+                            <element name="schema-cache" type="ks:file"/>
+                            <element name="script" type="ks:file"/>
+                        </sequence>
+                    </complexType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+    <complexType name="file">
+        <attribute type="string" name="filename"/>
+    </complexType>
+    <complexType name="naming">
+        <attribute type="string" name="sub-namespace"/>
+        <attribute type="string" name="prefix"/>
+        <attribute type="string" name="suffix"/>
+    </complexType>
+</schema>
