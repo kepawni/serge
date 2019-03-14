@@ -12,14 +12,14 @@ for CQRS and Event Sourcing.
 ## Quick start
 
 Run `vendor/bin/serge-codegen` and notice a default configuration
-popping into you working directory. Change the settings and run the
+popping into your working directory. Change the settings and run the
 script again. This will give you a sample GraphQL schema to play with.
-Use it to define you model and from now on (with both files in place)
+Use it to define your model and from now on (with both files in place)
 calling `vendor/bin/serge-codegen` again will generate class files for
 you that make up your domain model.
 
 **Important!** Use Git or another code versioning, because these classes
-will be overwritten everytime the code generator is called.
+will be overwritten every time the code generator is called.
 Alternatively you may change the target directory in the config file and
 carefully copy the classes into place on your own.
 
@@ -44,7 +44,9 @@ The *query* part must be present in a valid GraphQL schema, so we define
 *CqrsQuery* (you can name it however you want, by the way) as a regular
 *type*. To meet the requirement for types to have at least one field, we
 define *status*, so we have a simple means of testing if our endpoint is
-working at all.
+working at all. This can catch quite a few problems like missing
+dependencies, wrong config paths or just a server instance that didn't
+come up as planned.
 
 Now for the *mutation* part, which is covered by another *type* we named
 *CqrsAggregateMutators* (again, you may change that name if you like).
@@ -61,12 +63,15 @@ type CqrsAggregateMutators {
 ```
 
 These fields need a parameter for passing the aggregate ID, so we use
-`id: ID!` as a hard-coded convention. The return type of these fields
-match their names and are non-nullable, which is also a fixed
+`id: ID!` as a hard-coded convention. The return types of these fields
+must match their names and are non-nullable, which is also a fixed
 convention. This way, we now have declared the aggregates available in
 our model and can now turn to the commands they are supposed to handle.
 
 ### Define commands per aggregate
+
+So, we define another `type` for each of the aggregates and add our
+commands as fields.
 
 ```
 type Invoice {
@@ -78,8 +83,7 @@ type Invoice {
 }
 ```
 
-So, we define another `type` for each of the aggregates and add our
-commands as fields. The return type follows another simple convention:
+The return type follows another simple convention:
 - `ID!` for factory commands that bring a new aggregate into existence
 - `Boolean!` for regular commands that mutate an existing aggregate
 
@@ -104,13 +108,15 @@ input Money {
 }
 ```
 
-### Define event types
-
 As you can see, they even may refer to each other forming a complex and
-flexible type system. With these steps, we already have defined anything
-the code generator needs to know for building our model classes, but
-when value objects can be defined so easily, why not use this mechanism
-for the domain events as well?
+flexible type system.
+
+With these steps, we already have defined anything the code generator
+needs to know for building our model classes, but when value objects can
+be defined so easily, why not use this mechanism for the domain events
+as well?
+
+### Define event types
 
 ```
 interface InvoiceEvents {
@@ -139,4 +145,4 @@ paths and namespaces and so on. That gap will be bridged by the file
 
 If you call the code generator the first time, when there is no such
 configuration file, it will generate one for you. See the quick start
-for how to get started from scratch.
+for how to get going from scratch.
