@@ -157,8 +157,7 @@ class GraphQlCommandHandlerGenerator
                     $type->getFullName() === AggregateUuid::class
                         ? '%s::unfold'
                         : '%s::fromHashMap'
-                ),
-                $argument->name
+                )
             );
             if (!$type->isScalar()) {
                 $method->useClass($type->getFullName());
