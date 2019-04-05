@@ -139,7 +139,7 @@ type is just another convention here.
 ## XML configuration
 
 The GraphQL schema above defines the inner structure of our model, but
-in order to generate actuall class files we need a bit more context on
+in order to generate actual class files we need a bit more context on
 paths and namespaces and so on. That gap will be bridged by the file
 `serge.config.xml` (the name is fixed).
 
