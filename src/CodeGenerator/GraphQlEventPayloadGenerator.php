@@ -72,14 +72,21 @@ class GraphQlEventPayloadGenerator
                 ->appendParameter($type->isNullable() ? $parameter->specifyDefaultValue(null) : $parameter)
                 ->addContentString(sprintf('$this->init(\'%s\', $%1$s);', $property->name))
             ;
-            $unwindParams->addContentString($type->toConversion(sprintf('$spool[%d]', $i), '%s::unfold'));
+            $unwindParams->addContentString(
+                $type->toConversion(
+                    sprintf('$spool[%d]', $i),
+                    $type->getFullName() === AggregateUuid::class
+                        ? '%s::unfold'
+                        : '%s::unwind'
+                )
+            );
             $windUpParams->addContentString(
                 sprintf(
                     '%s$this->%s%s',
                     $type->isNullable() && !$type->isScalar() ? sprintf('is_null($this->%s) ? null : ', $property->name)
                         : '',
                     $property->name,
-                    $type->isScalar() ? '' : '->fold()'
+                    $type->isScalar() ? '' : ($type->getFullName() === AggregateUuid::class ? '->fold()' : '->windUp()')
                 )
             );
         }

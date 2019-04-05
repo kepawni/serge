@@ -64,9 +64,21 @@ class GraphQlValueObjectGenerator
                 ->addContentString(sprintf('$this->init(\'%s\', $%1$s);', $property->name))
             ;
             $fromHashMapParams->addContentString(
-                $type->toConversion(sprintf('$map[\'%s\']', $property->name), '%s::fromHashMap')
+                $type->toConversion(
+                    sprintf('$map[\'%s\']', $property->name),
+                    $type->getFullName() === AggregateUuid::class
+                        ? '%s::unfold'
+                        : '%s::fromHashMap'
+                )
             );
-            $unwindParams->addContentString($type->toConversion(sprintf('$spool[%d]', $i), '%s::unfold'));
+            $unwindParams->addContentString(
+                $type->toConversion(
+                    sprintf('$spool[%d]', $i),
+                    $type->getFullName() === AggregateUuid::class
+                        ? '%s::unfold'
+                        : '%s::unwind'
+                )
+            );
             $windUpParams->addContentString(
                 sprintf(
                     '%s$this->%s%s',
@@ -74,7 +86,7 @@ class GraphQlValueObjectGenerator
                         ? sprintf('is_null($this->%s) ? null : ', $property->name)
                         : '',
                     $property->name,
-                    $type->isScalar() ? '' : '->fold()'
+                    $type->isScalar() ? '' : ($type->getFullName() === AggregateUuid::class ? '->fold()' : '->windUp()')
                 )
             );
         }
