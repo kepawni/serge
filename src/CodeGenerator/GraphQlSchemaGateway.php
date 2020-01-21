@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Kepawni\Serge\CodeGenerator;
 
+use Generator;
 use GraphQL\Error\Error;
 use GraphQL\Error\InvariantViolation;
 use GraphQL\Type\Definition\BooleanType;
@@ -36,10 +37,10 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @return InterfaceType[]|iterable
+     * @return InterfaceType[]|Generator
      * @throws UnexpectedValueException
      */
-    public function iterateAggregateEventDescriptors(): iterable
+    public function iterateAggregateEventDescriptors(): Generator
     {
         foreach ($this->schema->getTypeMap() as $type) {
             if ($type instanceof InterfaceType) {
@@ -54,10 +55,10 @@ class GraphQlSchemaGateway
     /**
      * @param ObjectType $aggregate
      *
-     * @return FieldDefinition[]|iterable
+     * @return FieldDefinition[]|Generator
      * @throws UnexpectedValueException
      */
-    public function iterateAggregateEvents(ObjectType $aggregate): iterable
+    public function iterateAggregateEvents(ObjectType $aggregate): Generator
     {
         try {
             $type = $this->schema->getType($aggregate->name . 'Events');
@@ -76,11 +77,11 @@ class GraphQlSchemaGateway
     /**
      * @param ObjectType $aggregate
      *
-     * @return FieldDefinition[]|iterable
+     * @return FieldDefinition[]|Generator
      * @throws InvariantViolation
      * @throws UnexpectedValueException
      */
-    public function iterateAggregateMethods(ObjectType $aggregate): iterable
+    public function iterateAggregateMethods(ObjectType $aggregate): Generator
     {
         foreach ($aggregate->getFields() as $fieldDefinition) {
             $this->guardMutationMethodFieldValid($fieldDefinition, $aggregate->name);
@@ -89,11 +90,11 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @return ObjectType[]|iterable
+     * @return ObjectType[]|Generator
      * @throws InvariantViolation
      * @throws UnexpectedValueException
      */
-    public function iterateAggregates(): iterable
+    public function iterateAggregates(): Generator
     {
         /** @var FieldDefinition $fieldDefinition */
         foreach ($this->schema->getMutationType()->getFields() as $fieldDefinition) {
@@ -105,9 +106,9 @@ class GraphQlSchemaGateway
     }
 
     /**
-     * @return InputObjectType[]|iterable
+     * @return InputObjectType[]|Generator
      */
-    public function iterateValueObjects(): iterable
+    public function iterateValueObjects(): Generator
     {
         foreach ($this->schema->getTypeMap() as $type) {
             if ($type instanceof InputObjectType) {
