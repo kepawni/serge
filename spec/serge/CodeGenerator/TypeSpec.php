@@ -51,7 +51,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('mixed|null');
         $this->toParam()->shouldBe('');
         $this->toReturn()->shouldBe('');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_mixed_collection()
@@ -61,7 +61,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('mixed[]|iterable|null');
         $this->toParam()->shouldBe('?iterable ');
         $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_object()
@@ -71,7 +71,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('Uuid|null');
         $this->toParam()->shouldBe('?Uuid ');
         $this->toReturn()->shouldBe(': ?Uuid');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : Uuid::fromString($value)');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value ?? null) ? null : Uuid::fromString($value)');
     }
 
     function it_serializes_to_different_type_specifiers_when_object_collection()
@@ -81,7 +81,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('Uuid[]|iterable|null');
         $this->toParam()->shouldBe('?iterable ');
         $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value) ? null : $value');
+        $this->toConversion('$value', '%s::fromString')->shouldBe('is_null($value ?? null) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_required_mixed()
@@ -171,7 +171,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('float|null');
         $this->toParam()->shouldBe('?float ');
         $this->toReturn()->shouldBe(': ?float');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : floatval($value)');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : floatval($value)');
     }
 
     function it_serializes_to_different_type_specifiers_when_scalar_collection()
@@ -181,7 +181,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('float[]|iterable|null');
         $this->toParam()->shouldBe('?iterable ');
         $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_static()
@@ -191,7 +191,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('static|null');
         $this->toParam()->shouldBe('?self ');
         $this->toReturn()->shouldBe(': ?self');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : new static($value)');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : new static($value)');
     }
 
     function it_serializes_to_different_type_specifiers_when_static_collection()
@@ -201,7 +201,7 @@ class TypeSpec extends ObjectBehavior
         $this->toDocReturn()->shouldBe('static[]|iterable|null');
         $this->toParam()->shouldBe('?iterable ');
         $this->toReturn()->shouldBe(': ?iterable');
-        $this->toConversion('$value')->shouldBe('is_null($value) ? null : $value');
+        $this->toConversion('$value')->shouldBe('is_null($value ?? null) ? null : $value');
     }
 
     function it_serializes_to_different_type_specifiers_when_void()
