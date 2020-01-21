@@ -37,7 +37,7 @@ type CqrsAggregateMutators {
     Invoice(id: ID!): Invoice!
 }
 type Customer {
-    engageInBusiness(name: String! billingAddress: Address!): Customer!
+    engageInBusiness(name: String! billingAddress: Address!): ID!
     relocate(billingAddress: Address!): Boolean!
     rename(name: String!): Boolean!
     fleeFromPrison(name: String!): Boolean!
@@ -49,7 +49,7 @@ type Customer {
     belittleKnownProblems(name: String!): Boolean!
 }
 type Invoice {
-    chargeCustomer(customerId: ID!, invoiceNumber: String, invoiceDate: Date): Invoice!
+    chargeCustomer(customerId: ID!, invoiceNumber: String, invoiceDate: Date): ID!
     appendLineItem(item: LineItem!): Boolean!
     correctMistypedInvoiceDate(invoiceDate: Date!): Boolean!
     overrideDueDate(dueDate: Date!): Boolean!
