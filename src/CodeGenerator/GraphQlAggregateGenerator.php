@@ -156,12 +156,14 @@ class GraphQlAggregateGenerator
     private function eventNameForAggregateMethod(string $aggregateName, string $methodName): string
     {
         $words = preg_split('<(?=[A-Z])>', $methodName);
-        return (implode('', array_slice($words, 1)) ?: $aggregateName)
-            . (preg_match('<[^s]s$>', $methodName) ? 'Were' : 'Was')
-            . ucfirst(
-                preg_replace(['<[^aeiou][aeiou]([bcdfgklmnprtz])$>', '<y$>', '<e+$>'], ['\\0\\1', 'i', ''], $words[0])
-            )
-            . 'ed';
+        return $words
+            ? (implode('', array_slice($words, 1)) ?: $aggregateName)
+                . (preg_match('<[^s]s$>', $methodName) ? 'Were' : 'Was')
+                . ucfirst(
+                    preg_replace(['<[^aeiou][aeiou]([bcdfgklmnprtz])$>', '<y$>', '<e+$>'], ['\\0\\1', 'i', ''], $words[0])
+                )
+                . 'ed'
+            : $methodName;
     }
 
     private function eventToMethod(FieldDefinition $event, string $aggregateName): Method

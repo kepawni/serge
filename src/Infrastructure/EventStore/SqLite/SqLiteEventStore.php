@@ -14,6 +14,7 @@ use Kepawni\Twilted\EventStore;
 use Kepawni\Twilted\EventStream;
 use PDO;
 use PDOStatement;
+use RuntimeException;
 use stdClass;
 
 class SqLiteEventStore implements EventStore
@@ -63,6 +64,9 @@ FROM event_table
 WHERE aggregate_id_string = :aggregate_id_string
 SQL;
         $statement = $connection->prepare($sql);
+        if ($statement === false) {
+            throw new RuntimeException('Could not create prepared statement while PDO failed to throw exception');
+        }
         return $statement;
     }
 

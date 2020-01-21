@@ -65,7 +65,7 @@ class TypeResolver
             return $this->base->generateTypeConfigDecorator();
         } else {
             $map = $this->resolverMap;
-            return function (array $origTypeConfig, TypeDefinitionNode $typeDefNode, array $allDefNodes) use ($map) {
+            return function (array $origTypeConfig) use ($map) {
                 $result = $origTypeConfig;
                 if (isset($map[$origTypeConfig['name']])) {
                     $resolvers = $map[$origTypeConfig['name']];
