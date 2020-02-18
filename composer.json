@@ -1,6 +1,6 @@
 {
   "name": "kepawni/serge",
-  "version": "v0.5",
+  "version": "v0.6",
   "description": "Generates your CQRS/ES model classes from your GraphQL schema.",
   "type": "library",
   "license": "GPL-3.0-only",
@@ -12,13 +12,13 @@
   "bin": ["bin/serge-codegen"],
   "require-dev": {
     "friends-of-phpspec/phpspec-code-coverage": "^4.3",
-    "phpspec/phpspec": "^6.1",
-    "webonyx/graphql-php": "^0.13"
+    "phpspec/phpspec": "^6.1"
   },
   "require": {
     "ext-dom": "*",
     "ext-json": "*",
     "ext-pdo": "*",
-    "kepawni/twilted": "^1.2"
+    "kepawni/twilted": "^1.2",
+    "webonyx/graphql-php": "^0.13"
   }
 }
