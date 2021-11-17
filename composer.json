@@ -1,6 +1,6 @@
 {
   "name": "kepawni/serge",
-  "version": "v0.6",
+  "version": "v0.7",
   "description": "Generates your CQRS/ES model classes from your GraphQL schema.",
   "type": "library",
   "license": "GPL-3.0-only",
