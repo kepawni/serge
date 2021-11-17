@@ -24,9 +24,8 @@ class SqLiteEventStore implements EventStore
     const QUERY_COLUMN = '';
     const RESULT_COLUMN = '';
     const TABLENAME = '';
-    private $connection;
     /** @var SqLitePdo */
-    private $database;
+    private $connection;
     private $dbStatement;
     private $dbWriteStatement;
     private $omitEventNamespacePrefix;
@@ -36,7 +35,6 @@ class SqLiteEventStore implements EventStore
         $this->connection = $database;
         $this->dbStatement = $this->createDbStatement($this->connection);
         $this->dbWriteStatement = $this->createDbWriteStatement($this->connection);
-        $this->database = $database;
         $this->omitEventNamespacePrefix = $omitEventNamespacePrefix;
     }
 
