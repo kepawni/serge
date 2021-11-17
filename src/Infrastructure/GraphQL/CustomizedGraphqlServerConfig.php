@@ -78,7 +78,7 @@ class CustomizedGraphqlServerConfig extends ServerConfig
                     if ($directive->name->value == 'description') {
                         $type->description = implode(
                             PHP_EOL,
-                            array_map($valueFromArg, iterator_to_array($directive->arguments))
+                            array_map($valueFromArg, iterator_to_array($directive->arguments, false))
                         );
                     }
                 }
@@ -90,7 +90,7 @@ class CustomizedGraphqlServerConfig extends ServerConfig
                             if ($directive->name->value == 'description') {
                                 $field->description = implode(
                                     PHP_EOL,
-                                    array_map($valueFromArg, iterator_to_array($directive->arguments))
+                                    array_map($valueFromArg, iterator_to_array($directive->arguments, false))
                                 );
                             }
                         }

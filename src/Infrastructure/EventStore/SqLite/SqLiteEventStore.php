@@ -42,7 +42,7 @@ class SqLiteEventStore implements EventStore
 
     public function append(EventStream $recordedEvents): void
     {
-        array_map([$this, 'writeEvent'], iterator_to_array($recordedEvents));
+        array_map([$this, 'writeEvent'], iterator_to_array($recordedEvents, false));
     }
 
     public function retrieve(EntityIdentifier $id): EventStream
